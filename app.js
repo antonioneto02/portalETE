@@ -39,6 +39,7 @@ app.disable('x-powered-by');
 app.use(helmet({
   contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false,
+  crossOriginOpenerPolicy: false,
   hsts: false,
 }));
 app.use(hpp());

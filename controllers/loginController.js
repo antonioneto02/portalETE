@@ -10,7 +10,6 @@ const COOKIE_COMMON = { httpOnly: true, secure: false, sameSite: 'lax' };
 
 async function validaLogin(req, res) {
   const { username, authData } = req.body;
-
   const usernameClean = String(username || '').trim();
   if (!usernameClean || !authData) {
     return res.redirect('/login?error=invalid_credentials');
@@ -98,7 +97,6 @@ async function requireAuth(req, res, next) {
   }
 
   req.session.lastActivity = now;
-
   if (req.session.isProtheus) {
     const token = req.cookies?.token;
     const refreshToken = req.cookies?.refresh_token;
@@ -118,7 +116,6 @@ async function requireAuth(req, res, next) {
       } catch {}
     }
   }
-
   return next();
 }
 
