@@ -25,14 +25,10 @@
     }
 
     /* ── Scroll da tabela ── */
-    .dataTables_scrollBody {
-      overflow-x: auto !important;
-      -webkit-overflow-scrolling: touch;
-    }
-    .dataTables_scrollBody::-webkit-scrollbar { height: 6px; }
-    .dataTables_scrollBody::-webkit-scrollbar-track { background: #f3f4f6; border-radius: 3px; }
-    .dataTables_scrollBody::-webkit-scrollbar-thumb { background: #9ca3af; border-radius: 3px; }
-    .dataTables_scrollBody::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+    #tblMedidor_wrapper > div[style*="overflow-x"]::-webkit-scrollbar { height: 7px; }
+    #tblMedidor_wrapper > div[style*="overflow-x"]::-webkit-scrollbar-track { background: #f3f4f6; border-radius: 4px; }
+    #tblMedidor_wrapper > div[style*="overflow-x"]::-webkit-scrollbar-thumb { background: #9ca3af; border-radius: 4px; }
+    #tblMedidor_wrapper > div[style*="overflow-x"]::-webkit-scrollbar-thumb:hover { background: #6b7280; }
     @media (max-width:767px) {
       #tblMedidor_filter { gap:.3rem; }
     }
@@ -165,7 +161,7 @@
             </button>
           </div>
           <div class="card-body p-0 p-md-3">
-            <div>
+            <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;">
               <table id="tblMedidor" class="table table-striped table-hover dt-compact w-100">
                 <thead>
                   <tr>
@@ -503,7 +499,7 @@
       },
       order: [[0, 'desc']],
       pageLength: isMobile ? 10 : 25,
-      scrollX: true,
+      scrollX: false,
       dom: '<"d-flex flex-wrap gap-2 align-items-center mb-2"Bf>rtip<"mt-1"l>',
       buttons: [
         {
