@@ -1,51 +1,50 @@
 <div class="topbar">
   <div class="topbar-left">
-    <button class="nav-hamburger d-md-none" id="navHamburger" aria-label="Menu">
-      <i class="bi bi-list"></i>
-    </button>
-    <a href="/home" class="topbar-brand d-md-none text-decoration-none ms-2">
+    <!-- Mobile: logo + nome -->
+    <a href="/home" class="topbar-brand d-md-none text-decoration-none">
       <img src="/css/logo-cini.png" alt="ETE">
       <span>Portal ETE</span>
     </a>
+    <!-- Desktop: ícone da página -->
     <h1 class="d-none d-md-flex align-items-center mb-0">
       <i class="bi bi-<%= pageIcon %> me-2"></i><%= pageTitle %>
     </h1>
   </div>
   <div class="topbar-right">
-    <div class="topbar-user-avatar d-md-none" title="<%= username %>">
-      <%= (username || 'U').charAt(0).toUpperCase() %>
-    </div>
+    <!-- Desktop: nome + sair -->
     <span class="d-none d-md-inline"><i class="bi bi-person-circle me-1"></i><%= username %></span>
     <a href="/logout" class="btn btn-sm d-none d-md-inline-flex"
        style="background:rgba(255,255,255,0.15);color:white;border:none;">
       <i class="bi bi-box-arrow-right me-1"></i>Sair
     </a>
+    <!-- Mobile: hamburger no lado direito -->
+    <button class="nav-hamburger d-md-none" id="navHamburger" aria-label="Menu">
+      <i class="bi bi-list"></i>
+    </button>
   </div>
 </div>
 
-<!-- Overlay nav mobile -->
+<!-- Overlay nav mobile (slide de cima) -->
 <div class="mob-overlay" id="mobOverlay">
   <div class="mob-menu">
     <div class="mob-menu-head">
-      <img src="/css/logo-cini.png" alt="ETE" style="height:28px;">
+      <img src="/css/logo-cini.png" alt="ETE" style="height:26px;">
       <span>Portal ETE</span>
       <button class="mob-close" id="mobClose"><i class="bi bi-x-lg"></i></button>
     </div>
     <nav>
-      <a href="/home"    class="mob-link <%= typeof currentPath!=='undefined'&&currentPath==='/home'    ? 'mob-active' : '' %>">
+      <a href="/home"    class="mob-link <%= typeof currentPath!=='undefined'&&currentPath==='/home'    ? 'mob-active':'' %>">
         <i class="bi bi-house-fill"></i><span>Início</span>
       </a>
-      <a href="/medidor" class="mob-link <%= typeof currentPath!=='undefined'&&currentPath==='/medidor' ? 'mob-active' : '' %>">
+      <a href="/medidor" class="mob-link <%= typeof currentPath!=='undefined'&&currentPath==='/medidor' ? 'mob-active':'' %>">
         <i class="bi bi-speedometer2"></i><span>Medidor ETA</span>
       </a>
       <hr class="mob-divider">
-      <a href="/logout"  class="mob-link mob-logout">
+      <a href="/logout" class="mob-link mob-logout">
         <i class="bi bi-box-arrow-right"></i><span>Sair</span>
       </a>
     </nav>
-    <div class="mob-user">
-      <i class="bi bi-person-circle me-2"></i><%= username %>
-    </div>
+    <div class="mob-user"><i class="bi bi-person-circle me-2"></i><%= username %></div>
   </div>
 </div>
 
@@ -58,9 +57,8 @@
   function open(){ ov.classList.add('open'); document.body.style.overflow='hidden'; }
   function close(){ ov.classList.remove('open'); document.body.style.overflow=''; }
   btn.addEventListener('click',open);
-  cl.addEventListener('click',close);
+  if(cl) cl.addEventListener('click',close);
   ov.addEventListener('click',function(e){ if(e.target===ov) close(); });
   document.addEventListener('keydown',function(e){ if(e.key==='Escape') close(); });
-  ov.querySelectorAll('.mob-link').forEach(function(a){ a.addEventListener('click',close); });
 })();
 </script>

@@ -26,22 +26,19 @@
     .kpi-sub  { font-size: .68rem; opacity: .75; }
     .chart-wrap { position: relative; height: 260px; }
 
-    /* Mobile: KPI vira scroll horizontal compacto */
     @media (max-width: 767px) {
       .kpi-grid {
-        display: flex;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        gap: .5rem;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 4px;
-        scrollbar-width: none;
+        grid-template-columns: repeat(3, 1fr);
+        gap: .4rem;
+        margin-bottom: .75rem;
       }
-      .kpi-grid::-webkit-scrollbar { display: none; }
-      .kpi-card { min-width: 100px; flex-shrink: 0; padding: 10px 12px; }
-      .kpi-val  { font-size: 1.3rem; }
+      .kpi-card { padding: 9px 10px; border-radius: 8px; }
+      .kpi-val  { font-size: 1.15rem; }
+      .kpi-lbl  { font-size: .64rem; }
       .kpi-sub  { display: none; }
-      .chart-wrap { height: 195px; }
+      /* Esconde cards menos relevantes no mobile (mostra só 6) */
+      .kpi-hide-mobile { display: none !important; }
+      .chart-wrap { height: 175px; }
     }
   </style>
 </head>
@@ -70,12 +67,12 @@
             return ['#1e40af','#2B286F'];
           }
           const KPIS = [
-            { lbl:'pH',          unit:'',       v: l && l.pH,          min:6.5, max:9.5  },
-            { lbl:'Cloro',       unit:'mg/L',   v: l && l.Cloro,       min:0.2, max:5.0  },
-            { lbl:'Turbidez',    unit:'uT',     v: l && l.Turbidez,    min:0,   max:1.0  },
-            { lbl:'Cor',         unit:'uH',     v: l && l.Cor_Visual,  min:0,   max:15   },
-            { lbl:'Ferro',       unit:'mg/L',   v: l && l.Ferro,       min:0,   max:0.3  },
-            { lbl:'Alcalinidade',unit:'mg/L',   v: l && l.Alcalinidade,min:null,max:null },
+            { lbl:'pH',       unit:'',     v: l && l.pH,         min:6.5, max:9.5, mob:true  },
+            { lbl:'Turbidez', unit:'uT',   v: l && l.Turbidez,   min:0,   max:1.0, mob:true  },
+            { lbl:'Ferro',    unit:'mg/L', v: l && l.Ferro,      min:0,   max:0.3, mob:true  },
+            { lbl:'Cor',      unit:'uH',   v: l && l.Cor_Visual, min:0,   max:15,  mob:false },
+            { lbl:'Cloro',    unit:'mg/L', v: l && l.Cloro,      min:0.2, max:5.0, mob:false },
+            { lbl:'Alcalin.', unit:'mg/L', v: l && l.Alcalinidade,min:null,max:null,mob:false},
           ];
         %>
 
@@ -84,7 +81,7 @@
           <% KPIS.forEach(function(k) {
             const bg = statusBg(k.v, k.min, k.max);
           %>
-          <div class="kpi-card" style="background:linear-gradient(135deg,<%=bg[0]%>,<%=bg[1]%>);">
+          <div class="kpi-card <%=k.mob?'':'kpi-hide-mobile'%>" style="background:linear-gradient(135deg,<%=bg[0]%>,<%=bg[1]%>);">
             <div><span class="kpi-val"><%=fv(k.v)%></span><span class="kpi-unit"><%=k.unit%></span></div>
             <div class="kpi-lbl"><%=k.lbl%></div>
             <% if (k.min != null) { %><div class="kpi-sub">Ref: <%=k.min%>–<%=k.max%></div><% } %>
@@ -92,18 +89,18 @@
           <% }); %>
           <div class="kpi-card" style="background:linear-gradient(135deg,#1e40af,#2B286F);">
             <div><span class="kpi-val"><%=s.totalHoje%></span></div>
-            <div class="kpi-lbl">Registros hoje</div>
+            <div class="kpi-lbl">Hoje</div>
             <div class="kpi-sub">Total: <%=s.totalGeral%></div>
           </div>
           <% if (s.conformidade) { %>
           <div class="kpi-card" style="background:linear-gradient(135deg,#065f46,#059669);">
             <div><span class="kpi-val"><%=s.conformidade.ph_conf%></span><span class="kpi-unit">%</span></div>
-            <div class="kpi-lbl">pH conforme</div>
+            <div class="kpi-lbl">pH OK</div>
             <div class="kpi-sub">PORTARIA 888</div>
           </div>
           <% } %>
           <% if (l) { %>
-          <div class="kpi-card" style="background:linear-gradient(135deg,#334155,#64748b);">
+          <div class="kpi-card kpi-hide-mobile" style="background:linear-gradient(135deg,#334155,#64748b);">
             <div class="kpi-lbl" style="font-size:.7rem;opacity:1;">Última medição</div>
             <div style="font-size:.82rem;font-weight:600;"><%=l.Data%></div>
             <div class="kpi-sub"><%=l.turnoLabel%> · <%=l.LOCAL||'—'%></div>
