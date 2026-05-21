@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Portal ETE — Início</title>
+  <%- include('../System/headIncludes.ejs') %>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="layout-container">
+    <%- include('../partials/sidebar') %>
+    <div class="main-content">
+      <%- include('../partials/topbar', { pageTitle: 'Início', pageIcon: 'house', username: username }) %>
+
+      <div class="content">
+        <!-- KPI cards -->
+        <div class="indicators-bar" id="kpiBar">
+          <div class="indicator-card" style="background:linear-gradient(135deg,#64748b,#94a3b8);">
+            <div class="indicator-val">—</div>
+            <div class="indicator-lbl">Carregando...</div>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row g-3">
+          <div class="col-12 col-lg-8">
+            <div class="card">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-graph-up me-2"></i>Tendência — últimos 30 dias</span>
+              </div>
+              <div class="card-body" style="position:relative;height:260px;">
+                <canvas id="trendChart"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-lg-4">
+            <div class="card h-100">
+              <div class="card-header"><i class="bi bi-droplet me-2"></i>Qualidade atual</div>
+              <div class="card-body p-0">
+                <table class="table table-sm mb-0" id="qualTable">
+                  <tbody>
+                    <tr><td colspan="3" class="text-center text-muted py-3">Carregando...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    const FMT = v => (v == null ? '—' : Number(v).toFixed(2));
+    const PARAMS = [
+      { key:'pH',          label:'pH',           color:'#2B286F', min:6.5, max:9.5,  unit:'' },
+      { key:'Cloro',       label:'Cloro',        color:'#16a34a', min:0.2, max:5.0,  unit:' mg/L' },
+      { key:'Turbidez',    label:'Turbidez',     color:'#d97706', min:0,   max:1.0,  unit:' uT' },
+      { key:'Cor_Visual',  label:'Cor',          color:'#7c3aed', min:0,   max:15,   unit:' uH' },
+      { key:'Alcalinidade',label:'Alcalinidade', color:'#0d9488', min:null,max:null, unit:' mg/L' },
+      { key:'Ferro',       label:'Ferro',        color:'#b91c1c', min:0,   max:0.3,  unit:' mg/L' },
+      { key:'Dureza',      label:'Dureza',       color:'#0369a1', min:null,max:null, unit:' mg/L' },
+    ];
+
+    function statusColor(p, v) {
+      if (v == null || p.min == null) return '#64748b';
+      if (v >= p.min && v <= p.max) return '#16a34a';
+      if (v < p.min * 0.8 || v > p.max * 1.2) return '#b91c1c';
+      return '#d97706';
+    }
+
+    let trendChart = null;
+
+    fetch('/api/home-stats')
+      .then(r => r.json())
+      .then(data => {
+        renderKpi(data.latest, data.totalHoje);
+        renderQualTable(data.latest);
+        renderChart(data.trend);
+      })
+      .catch(() => {
+        document.getElementById('kpiBar').innerHTML =
+          '<p class="text-muted small ms-1">Erro ao carregar indicadores.</p>';
+      });
+
+    function renderKpi(latest, totalHoje) {
+      const bar = document.getElementById('kpiBar');
+      if (!latest) {
+        bar.innerHTML = '<p class="text-muted small ms-1">Nenhum dado encontrado.</p>';
+        return;
+      }
+      const cards = PARAMS.map(p => {
+        const v = latest[p.key];
+        const bg = statusColor(p, v);
+        return `<div class="indicator-card" style="background:linear-gradient(135deg,${bg},${bg}cc);">
+          <div class="indicator-val">${v != null ? Number(v).toFixed(2) : '—'}</div>
+          <div class="indicator-lbl">${p.label}${p.unit ? p.unit : ''}</div>
+        </div>`;
+      });
+      cards.push(`<div class="indicator-card" style="background:linear-gradient(135deg,#334155,#64748b);">
+        <div class="indicator-val">${totalHoje}</div>
+        <div class="indicator-lbl">Registros hoje</div>
+      </div>`);
+      bar.innerHTML = cards.join('');
+    }
+
+    function renderQualTable(latest) {
+      const tb = document.querySelector('#qualTable tbody');
+      if (!latest) { tb.innerHTML = '<tr><td class="text-center text-muted py-3" colspan="3">Sem dados</td></tr>'; return; }
+      const rows = PARAMS.map(p => {
+        const v = latest[p.key];
+        const color = statusColor(p, v);
+        const dot = `<span style="width:10px;height:10px;border-radius:50%;background:${color};display:inline-block;margin-right:6px;"></span>`;
+        return `<tr>
+          <td class="ps-3">${dot}${p.label}</td>
+          <td class="fw-semibold">${v != null ? Number(v).toFixed(2) : '—'}${p.unit}</td>
+          <td class="text-muted pe-3" style="font-size:.75rem;">${
+            p.min != null ? `${p.min}–${p.max}` : ''
+          }</td>
+        </tr>`;
+      });
+      if (latest.Data) {
+        rows.push(`<tr><td colspan="3" class="ps-3 text-muted" style="font-size:.75rem;border-top:1px solid #eee;">
+          Última medição: ${latest.Data}${latest.turno ? ' · ' + latest.turno : ''}
+          ${latest.Operador ? ' · ' + latest.Operador : ''}
+        </td></tr>`);
+      }
+      tb.innerHTML = rows.join('');
+    }
+
+    function renderChart(trend) {
+      if (!trend || !trend.length) return;
+      const labels = trend.map(r => r.dia);
+      const ctx = document.getElementById('trendChart').getContext('2d');
+      if (trendChart) trendChart.destroy();
+      trendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'pH',
+              data: trend.map(r => r.ph),
+              borderColor: '#2B286F',
+              backgroundColor: 'rgba(43,40,111,0.08)',
+              tension: 0.3, fill: true, pointRadius: 3,
+            },
+            {
+              label: 'Cloro (mg/L)',
+              data: trend.map(r => r.cloro),
+              borderColor: '#16a34a',
+              backgroundColor: 'rgba(22,163,74,0.08)',
+              tension: 0.3, fill: true, pointRadius: 3,
+            },
+            {
+              label: 'Turbidez (uT)',
+              data: trend.map(r => r.turbidez),
+              borderColor: '#d97706',
+              backgroundColor: 'rgba(217,119,6,0.08)',
+              tension: 0.3, fill: true, pointRadius: 3,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } } },
+          scales: {
+            x: { ticks: { font: { size: 10 }, maxTicksLimit: 10 } },
+            y: { ticks: { font: { size: 10 } }, beginAtZero: false },
+          },
+        },
+      });
+    }
+  })();
+  </script>
+</body>
+</html>

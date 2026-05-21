@@ -1,0 +1,41 @@
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <img src="/css/logo-cini.png" alt="logo" class="sidebar-logo-img">
+    </div>
+    <div class="sidebar-title"><span class="title-text">PORTAL ETE</span></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">
+      <span class="nav-label nav-text">Menu</span>
+      <a class="nav-item <%= currentPath === '/home' ? 'active' : '' %>" href="/home">
+        <i class="bi bi-house"></i> <span class="nav-text">Início</span>
+      </a>
+      <a class="nav-item <%= currentPath === '/medidor' ? 'active' : '' %>" href="/medidor">
+        <i class="bi bi-speedometer2"></i> <span class="nav-text">Medidor ETA</span>
+      </a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <hr class="sidebar-divider">
+    <a class="nav-item" href="/logout">
+      <i class="bi bi-box-arrow-right"></i> <span class="nav-text">Sair</span>
+    </a>
+  </div>
+</aside>
+
+<!-- Bottom nav mobile -->
+<nav class="mobile-nav">
+  <a class="mobile-nav-item <%= currentPath === '/home' ? 'active' : '' %>" href="/home">
+    <i class="bi bi-house"></i>
+    <span>Início</span>
+  </a>
+  <a class="mobile-nav-item <%= currentPath === '/medidor' ? 'active' : '' %>" href="/medidor">
+    <i class="bi bi-speedometer2"></i>
+    <span>Medidor</span>
+  </a>
+  <a class="mobile-nav-item nav-logout" href="/logout">
+    <i class="bi bi-box-arrow-right"></i>
+    <span>Sair</span>
+  </a>
+</nav>
