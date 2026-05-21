@@ -102,23 +102,15 @@
           </div>
           <% } %>
           <% if (l) { %>
-          <div class="kpi-card kpi-mob-only" style="background:linear-gradient(135deg,#1e40af,#2B286F);">
-            <div class="kpi-lbl" style="opacity:.8;">Turno</div>
-            <div style="font-size:1.1rem;font-weight:700;margin-top:4px;"><%=l.turnoLabel||'—'%></div>
-          </div>
-          <div class="kpi-card kpi-mob-only" style="background:linear-gradient(135deg,#065f46,#059669);">
-            <div class="kpi-lbl" style="opacity:.8;">Operador</div>
-            <div style="font-size:1.05rem;font-weight:700;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><%=l.Operador||'—'%></div>
-          </div>
-          <div class="kpi-card kpi-mob-only" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">
-            <div class="kpi-lbl" style="opacity:.8;">Local</div>
-            <div style="font-size:1.05rem;font-weight:700;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><%=l.LOCAL||'—'%></div>
-          </div>
           <div class="kpi-card kpi-mob-only" style="background:linear-gradient(135deg,#334155,#64748b);">
             <div class="kpi-lbl" style="opacity:.8;">Data</div>
-            <div style="font-size:1.05rem;font-weight:700;margin-top:4px;"><%=l.Data||'—'%></div>
+            <div style="font-size:1.1rem;font-weight:700;margin-top:4px;"><%=l.Data||'—'%></div>
           </div>
           <% } %>
+          <div class="kpi-card kpi-mob-only" style="background:linear-gradient(135deg,#1e40af,#2B286F);">
+            <div class="kpi-lbl" style="opacity:.8;">Últ. dia</div>
+            <div style="font-size:1.1rem;font-weight:700;margin-top:4px;"><%=s.totalUltimoDia%></div>
+          </div>
         </div>
 
         <!-- Row 1: Tendência + Distribuição turno -->

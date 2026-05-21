@@ -40,6 +40,7 @@ app.use(helmet({
   contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false,
   crossOriginOpenerPolicy: false,
+  originAgentCluster: false,
   hsts: false,
 }));
 app.use(hpp());
