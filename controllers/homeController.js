@@ -27,15 +27,17 @@ async function renderHome(req, res) {
           [turno],[Operador],[LOCAL],
           [pH],[Cloro],[Turbidez],[Cor_Visual],[Ferro],[Dureza],[Alcalinidade]
         FROM [dw].[dbo].[FATO_LANCAMENTO_ETA]
+        WHERE [pH] IS NOT NULL AND [pH] > 0
+          AND [Turbidez] IS NOT NULL AND [Turbidez] > 0
         ORDER BY [Data] DESC
       `),
       pool.request().query(`
         SELECT TOP 30
           CONVERT(VARCHAR(10),[Data],23) AS dia,
           AVG(${sqlAdapt('[pH]')})       AS ph,
-          AVG(NULLIF(${sqlAdapt('[Turbidez]')},0)) AS turbidez,
-          AVG(NULLIF(${sqlAdapt('[Cor_Visual]')},0)) AS cor,
-          AVG(NULLIF(${sqlAdapt('[Ferro]')},0)) AS ferro,
+          AVG(CASE WHEN ${sqlAdapt('[Turbidez]')} > 0.5 THEN ${sqlAdapt('[Turbidez]')} ELSE NULL END) AS turbidez,
+          AVG(CASE WHEN ${sqlAdapt('[Cor_Visual]')} > 0 THEN ${sqlAdapt('[Cor_Visual]')} ELSE NULL END) AS cor,
+          AVG(CASE WHEN ${sqlAdapt('[Ferro]')} > 0 THEN ${sqlAdapt('[Ferro]')} ELSE NULL END) AS ferro,
           COUNT(*) AS registros
         FROM [dw].[dbo].[FATO_LANCAMENTO_ETA]
         WHERE [pH] IS NOT NULL AND [pH] > 0
@@ -86,6 +88,8 @@ async function renderHome(req, res) {
         FROM [dw].[dbo].[FATO_LANCAMENTO_ETA]
         WHERE CONVERT(DATE,[Data]) = (
           SELECT MAX(CONVERT(DATE,[Data])) FROM [dw].[dbo].[FATO_LANCAMENTO_ETA]
+          WHERE [pH] IS NOT NULL AND [pH] > 0
+            AND [Turbidez] IS NOT NULL AND [Turbidez] > 0
         )
       `),
       pool.request().query(`SELECT COUNT(*) AS total FROM [dw].[dbo].[FATO_LANCAMENTO_ETA]`),
