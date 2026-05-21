@@ -396,25 +396,18 @@ table.dataTable thead th {
   .sidebar-hamburger,
   .sidebar-overlay { display: none !important; }
 
-  .main-content { margin-left: 0 !important; max-width: 100vw; overflow-x: hidden; }
+  .main-content { margin-left: 0 !important; max-width: 100vw; }
   .sidebar:hover ~ .main-content { margin-left: 0 !important; }
 
   .topbar { padding: 0 12px; height: 52px; flex-wrap: nowrap; }
   .topbar-left h1 { font-size: 0.93rem; }
   .topbar-right   { gap: 8px; }
-  .content { padding: 10px; max-width: 100%; overflow-x: hidden; }
-
-  /* Força tabelas a não vazar */
-  .dataTables_wrapper { overflow-x: hidden; max-width: 100%; }
-  .dataTables_scroll, .dataTables_scrollBody { max-width: 100%; }
-  table.dataTable { max-width: 100% !important; }
+  .content { padding: 10px; }
 
   .card-header .d-flex  { flex-direction: column; gap: 0.5rem; align-items: flex-start !important; }
   .vagas-grid { grid-template-columns: 1fr !important; }
   .modal-dialog { margin: 0.5rem auto; max-width: calc(100vw - 1rem); }
   td .d-flex { flex-wrap: wrap; gap: 4px; }
-
-  /* Imagens e elementos não vazam */
   img, canvas, iframe, video { max-width: 100%; }
   .row { margin-left: 0; margin-right: 0; }
   .row > * { padding-left: 6px; padding-right: 6px; }

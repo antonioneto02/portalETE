@@ -23,6 +23,16 @@
       #tblMedidor_filter > div { width:100% !important; display:block !important; }
       #tblMedidor_filter > div input { width:100% !important; min-width:0 !important; box-sizing:border-box; }
     }
+
+    /* ── Scroll da tabela ── */
+    .dataTables_scrollBody {
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch;
+    }
+    .dataTables_scrollBody::-webkit-scrollbar { height: 6px; }
+    .dataTables_scrollBody::-webkit-scrollbar-track { background: #f3f4f6; border-radius: 3px; }
+    .dataTables_scrollBody::-webkit-scrollbar-thumb { background: #9ca3af; border-radius: 3px; }
+    .dataTables_scrollBody::-webkit-scrollbar-thumb:hover { background: #6b7280; }
     @media (max-width:767px) {
       #tblMedidor_filter { gap:.3rem; }
     }
@@ -155,7 +165,7 @@
             </button>
           </div>
           <div class="card-body p-0 p-md-3">
-            <div style="overflow-x:auto;">
+            <div>
               <table id="tblMedidor" class="table table-striped table-hover dt-compact w-100">
                 <thead>
                   <tr>
@@ -493,7 +503,7 @@
       },
       order: [[0, 'desc']],
       pageLength: isMobile ? 10 : 25,
-      scrollX: !isMobile,
+      scrollX: true,
       dom: '<"d-flex flex-wrap gap-2 align-items-center mb-2"Bf>rtip<"mt-1"l>',
       buttons: [
         {
