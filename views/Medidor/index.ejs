@@ -170,26 +170,26 @@
                     <th>Operador</th>
                     <th>Matrícula</th>
                     <th>Local</th>
-                    <th>pH</th>
-                    <th>Cloro</th>
-                    <th>Turbidez</th>
-                    <th>Cor</th>
-                    <th>Alcalinidade</th>
-                    <th>Ferro</th>
-                    <th>Dureza</th>
                     <th>Aspecto</th>
+                    <th>Ap. Visual</th>
+                    <th>Cor</th>
+                    <th>Ap. Cor</th>
+                    <th>pH</th>
+                    <th>Ap. pH</th>
+                    <th>Cloro</th>
+                    <th>Ap. Cloro</th>
+                    <th>Turbidez</th>
+                    <th>Ap. Turbidez</th>
+                    <th>Alcalinidade</th>
+                    <th>Ap. Alcalinidade</th>
+                    <th>Ferro</th>
+                    <th>Ap. Ferro</th>
+                    <th>Dureza</th>
+                    <th>Ap. Dureza</th>
                     <th>Início</th>
                     <th>Fim</th>
                     <th>Ligado</th>
                     <th>Desligado</th>
-                    <th>Ap. Visual</th>
-                    <th>Ap. Cor</th>
-                    <th>Ap. pH</th>
-                    <th>Ap. Cloro</th>
-                    <th>Ap. Turbidez</th>
-                    <th>Ap. Alcalinidade</th>
-                    <th>Ap. Ferro</th>
-                    <th>Ap. Dureza</th>
                     <th>OBS</th>
                   </tr>
                 </thead>
@@ -229,26 +229,26 @@
                     <td><%= l.Operador||'—' %></td>
                     <td><%= l.matricula||'—' %></td>
                     <td><%= l.LOCAL||'—' %></td>
-                    <td class="<%= cls(l.pH,6.5,9.5) %>"><%= fmt(l.pH) %></td>
-                    <td class="<%= cls(l.Cloro,0.2,5.0) %>"><%= fmt(l.Cloro) %></td>
-                    <td class="<%= cls(l.Turbidez,0,1.0) %>"><%= fmt(l.Turbidez) %></td>
-                    <td class="<%= cls(l.Cor_Visual,0,15) %>"><%= fmt(l.Cor_Visual) %></td>
-                    <td><%= fmt(l.Alcalinidade) %></td>
-                    <td class="<%= cls(l.Ferro,0,0.3) %>"><%= fmt(l.Ferro) %></td>
-                    <td><%= fmt(l.Dureza) %></td>
                     <td><%= l.Aspecto_Visual||'—' %></td>
+                    <td><%= l.Visual_Aparelho||'—' %></td>
+                    <td class="<%= cls(l.Cor_Visual,0,15) %>"><%= fmt(l.Cor_Visual) %></td>
+                    <td><%= fmt(l.Cor_Aparelho) %></td>
+                    <td class="<%= cls(l.pH,6.5,9.5) %>"><%= fmt(l.pH) %></td>
+                    <td><%= fmt(l.pH_Aparelho) %></td>
+                    <td class="<%= cls(l.Cloro,0.2,5.0) %>"><%= fmt(l.Cloro) %></td>
+                    <td><%= fmt(l.Cloro_Aparelho) %></td>
+                    <td class="<%= cls(l.Turbidez,0,1.0) %>"><%= fmt(l.Turbidez) %></td>
+                    <td><%= fmt(l.Turbidez_Aparelho) %></td>
+                    <td><%= fmt(l.Alcalinidade) %></td>
+                    <td><%= fmt(l.Alcalinidade_Aparelho) %></td>
+                    <td class="<%= cls(l.Ferro,0,0.3) %>"><%= fmt(l.Ferro) %></td>
+                    <td><%= fmt(l.Ferro_Aparelho) %></td>
+                    <td><%= fmt(l.Dureza) %></td>
+                    <td><%= fmt(l.Dureza_Aparelho) %></td>
                     <td><%= l.Inicial||'—' %></td>
                     <td><%= l.Final||'—' %></td>
                     <td><%= l.Ligado||'—' %></td>
                     <td><%= l.Deligado||'—' %></td>
-                    <td><%= l.Visual_Aparelho||'—' %></td>
-                    <td><%= fmt(l.Cor_Aparelho) %></td>
-                    <td><%= fmt(l.pH_Aparelho) %></td>
-                    <td><%= fmt(l.Cloro_Aparelho) %></td>
-                    <td><%= fmt(l.Turbidez_Aparelho) %></td>
-                    <td><%= fmt(l.Alcalinidade_Aparelho) %></td>
-                    <td><%= fmt(l.Ferro_Aparelho) %></td>
-                    <td><%= fmt(l.Dureza_Aparelho) %></td>
                     <td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><%= l.OBS||'—' %></td>
                   </tr>
                 <% }); %>
