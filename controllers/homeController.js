@@ -81,8 +81,12 @@ async function renderHome(req, res) {
         ORDER BY MIN(${sqlAdapt('[pH]')})
       `),
       pool.request().query(`
-        SELECT COUNT(*) AS total FROM [dw].[dbo].[FATO_LANCAMENTO_ETA]
-        WHERE CONVERT(DATE,[Data]) = CONVERT(DATE,GETDATE())
+        SELECT COUNT(*) AS total,
+               CONVERT(VARCHAR(10), MAX([Data]), 23) AS ultimo_dia
+        FROM [dw].[dbo].[FATO_LANCAMENTO_ETA]
+        WHERE CONVERT(DATE,[Data]) = (
+          SELECT MAX(CONVERT(DATE,[Data])) FROM [dw].[dbo].[FATO_LANCAMENTO_ETA]
+        )
       `),
       pool.request().query(`SELECT COUNT(*) AS total FROM [dw].[dbo].[FATO_LANCAMENTO_ETA]`),
       pool.request().query(`
@@ -118,7 +122,8 @@ async function renderHome(req, res) {
     stats.trend       = trendR.recordset.reverse();
     stats.byTurno     = byTurnoR.recordset;
     stats.phDist      = phDistR.recordset;
-    stats.totalHoje   = todayR.recordset[0]?.total  ?? 0;
+    stats.totalUltimoDia  = todayR.recordset[0]?.total     ?? 0;
+    stats.ultimoDia       = todayR.recordset[0]?.ultimo_dia ?? null;
     stats.totalGeral  = totalR.recordset[0]?.total  ?? 0;
     stats.conformidade = confR.recordset[0] || null;
 

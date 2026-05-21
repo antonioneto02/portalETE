@@ -78,7 +78,7 @@
       box-shadow:0 0 0 .18rem rgba(43,40,111,.18);
       outline:none;
     }
-    .param-pair .form-control::placeholder { color:#9ca3af; font-style:italic; }
+    .param-pair .form-control::placeholder { color:#9ca3af; font-style:normal; }
 
     /* ── Par valor/aparelho lado a lado ── */
     .param-group {
@@ -409,7 +409,7 @@
       order: [[0, 'desc']],
       pageLength: isMobile ? 10 : 25,
       scrollX: !isMobile,
-      dom: '<"d-flex flex-wrap gap-2 align-items-center mb-2"Blf>rtip',
+      dom: '<"d-flex flex-wrap gap-2 align-items-center mb-2"Bf>rtip<"mt-1"l>',
       buttons: [
         {
           extend: 'excelHtml5',
