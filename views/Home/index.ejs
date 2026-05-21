@@ -24,7 +24,9 @@
     .kpi-unit { font-size: .72rem; opacity: .85; font-weight: 500; margin-left: 2px; }
     .kpi-lbl  { font-size: .72rem; opacity: .88; letter-spacing: .2px; }
     .kpi-sub  { font-size: .68rem; opacity: .75; }
-    .kpi-mob-only { display: none; }
+    .kpi-mob-only    { display: none; }
+    .kpi-hide-mobile { display: none !important; }   /* oculto em qualquer tela */
+    @media (min-width: 768px) { .kpi-grid { display: none; } }  /* grade some no desktop */
     .chart-wrap { position: relative; height: 260px; }
 
     @media (max-width: 767px) {
