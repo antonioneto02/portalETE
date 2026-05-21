@@ -3,6 +3,8 @@
 <head>
   <title>Portal ETE — Medidor ETA</title>
   <%- include('../System/headIncludes.ejs') %>
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <style>
     /* ── Tabela ── */
     .badge-turno { font-size:.72rem; padding:3px 8px; border-radius:10px; }
@@ -28,6 +30,40 @@
     /* ── Modal ── */
     .modal-fullscreen-sm-down { max-height:100dvh; }
     #medidorModal .modal-body { overflow-y:auto; max-height:calc(100dvh - 140px); padding:16px; }
+
+    /* ── Select2: mesmo visual do form-control ── */
+    #medidorModal .select2-container { width:100% !important; }
+    #medidorModal .select2-container--default .select2-selection--single {
+      height:36px;
+      border:1.5px solid #d1d5db;
+      border-radius:6px;
+      padding:.38rem .7rem;
+      background:#fff;
+      transition:border-color .15s, box-shadow .15s;
+    }
+    #medidorModal .select2-container--default.select2-container--focus .select2-selection--single,
+    #medidorModal .select2-container--default.select2-container--open .select2-selection--single {
+      border-color:#2B286F;
+      box-shadow:0 0 0 .18rem rgba(43,40,111,.18);
+      outline:none;
+    }
+    #medidorModal .select2-container--default .select2-selection--single .select2-selection__rendered {
+      line-height:1.5; padding:0; color:#111827; font-size:.875rem;
+    }
+    #medidorModal .select2-container--default .select2-selection--single .select2-selection__placeholder {
+      color:#9ca3af;
+    }
+    #medidorModal .select2-container--default .select2-selection--single .select2-selection__arrow {
+      height:34px; right:6px;
+    }
+    #medidorModal .select2-container--default .select2-selection--single .select2-selection__clear {
+      margin-right:14px; color:#9ca3af; font-size:1rem;
+    }
+    .select2-dropdown { z-index:9999; border:1.5px solid #d1d5db; border-radius:6px; font-size:.875rem; }
+    .select2-container--default .select2-results__option--highlighted { background:#2B286F !important; }
+    .select2-search--dropdown .select2-search__field {
+      border:1px solid #d1d5db; border-radius:4px; padding:4px 8px; font-size:.85rem;
+    }
 
     /* ── Seções do formulário ── */
     .form-section {
@@ -126,6 +162,7 @@
                     <th>Data</th>
                     <th>Turno</th>
                     <th>Operador</th>
+                    <th>Matrícula</th>
                     <th>Local</th>
                     <th>pH</th>
                     <th>Cloro</th>
@@ -135,8 +172,18 @@
                     <th>Ferro</th>
                     <th>Dureza</th>
                     <th class="d-none d-lg-table-cell">Aspecto</th>
-                    <th class="d-none d-lg-table-cell">Inicial</th>
-                    <th class="d-none d-lg-table-cell">Final</th>
+                    <th class="d-none d-lg-table-cell">Início</th>
+                    <th class="d-none d-lg-table-cell">Fim</th>
+                    <th class="d-none d-lg-table-cell">Ligado</th>
+                    <th class="d-none d-lg-table-cell">Desligado</th>
+                    <th class="d-none d-lg-table-cell">Ap. Visual</th>
+                    <th class="d-none d-lg-table-cell">Ap. Cor</th>
+                    <th class="d-none d-lg-table-cell">Ap. pH</th>
+                    <th class="d-none d-lg-table-cell">Ap. Cloro</th>
+                    <th class="d-none d-lg-table-cell">Ap. Turbidez</th>
+                    <th class="d-none d-lg-table-cell">Ap. Alcalinidade</th>
+                    <th class="d-none d-lg-table-cell">Ap. Ferro</th>
+                    <th class="d-none d-lg-table-cell">Ap. Dureza</th>
                     <th class="d-none d-lg-table-cell">OBS</th>
                   </tr>
                 </thead>
@@ -174,6 +221,7 @@
                       <% } else { %>—<% } %>
                     </td>
                     <td><%= l.Operador||'—' %></td>
+                    <td><%= l.matricula||'—' %></td>
                     <td><%= l.LOCAL||'—' %></td>
                     <td class="<%= cls(l.pH,6.5,9.5) %>"><%= fmt(l.pH) %></td>
                     <td class="<%= cls(l.Cloro,0.2,5.0) %>"><%= fmt(l.Cloro) %></td>
@@ -185,6 +233,16 @@
                     <td class="d-none d-lg-table-cell"><%= l.Aspecto_Visual||'—' %></td>
                     <td class="d-none d-lg-table-cell"><%= l.Inicial||'—' %></td>
                     <td class="d-none d-lg-table-cell"><%= l.Final||'—' %></td>
+                    <td class="d-none d-lg-table-cell"><%= l.Ligado||'—' %></td>
+                    <td class="d-none d-lg-table-cell"><%= l.Deligado||'—' %></td>
+                    <td class="d-none d-lg-table-cell"><%= l.Visual_Aparelho||'—' %></td>
+                    <td class="d-none d-lg-table-cell"><%= fmt(l.Cor_Aparelho) %></td>
+                    <td class="d-none d-lg-table-cell"><%= fmt(l.pH_Aparelho) %></td>
+                    <td class="d-none d-lg-table-cell"><%= fmt(l.Cloro_Aparelho) %></td>
+                    <td class="d-none d-lg-table-cell"><%= fmt(l.Turbidez_Aparelho) %></td>
+                    <td class="d-none d-lg-table-cell"><%= fmt(l.Alcalinidade_Aparelho) %></td>
+                    <td class="d-none d-lg-table-cell"><%= fmt(l.Ferro_Aparelho) %></td>
+                    <td class="d-none d-lg-table-cell"><%= fmt(l.Dureza_Aparelho) %></td>
                     <td class="d-none d-lg-table-cell" style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><%= l.OBS||'—' %></td>
                   </tr>
                 <% }); %>
@@ -219,24 +277,47 @@
                 </div>
                 <div class="col-6 col-md-3 param-pair">
                   <label for="fTurno">Turno <span class="req">*</span></label>
-                  <select class="form-select" id="fTurno" name="turno" required>
+                  <select class="form-control" id="fTurno" name="turno" required>
                     <option value="">— Selecione —</option>
                     <option>Manhã</option>
                     <option>Tarde</option>
                     <option>Noite</option>
                   </select>
                 </div>
-                <div class="col-6 col-md-3 param-pair">
+                <div class="col-12 col-md-4 param-pair">
+                  <label for="fOperador">Operador <span class="req">*</span></label>
+                  <select class="form-control" id="fOperador" name="Operador"></select>
+                </div>
+                <div class="col-6 col-md-2 param-pair">
                   <label for="fMatricula">Matrícula</label>
-                  <input type="text" class="form-control" id="fMatricula" name="matricula" placeholder="Ex: 000123">
+                  <input type="text" class="form-control" id="fMatricula" name="matricula"
+                    placeholder="Auto" readonly
+                    style="background:#f3f4f6;cursor:not-allowed;color:#6b7280;">
                 </div>
-                <div class="col-6 col-md-3 param-pair">
-                  <label for="fOperador">Operador</label>
-                  <input type="text" class="form-control" id="fOperador" name="Operador" placeholder="Nome completo">
-                </div>
-                <div class="col-12 col-md-5 param-pair">
+                <div class="col-6 col-md-6 param-pair">
                   <label for="fLocal">Local / Ponto de coleta</label>
-                  <input type="text" class="form-control" id="fLocal" name="LOCAL" placeholder="Ex: ETA 01 — Polidor">
+                  <select class="form-control" id="fLocal" name="LOCAL">
+                    <option value="">— Selecione —</option>
+                    <option>ETA Compacta</option>
+                    <option>Caixa Azul</option>
+                    <option>Abrandador</option>
+                    <option>Areia VEXER</option>
+                    <option>Zeolita</option>
+                    <option>Carvão VEXER</option>
+                    <option>Abrandador VEXER</option>
+                    <option>Reservatório</option>
+                    <option>Areia</option>
+                    <option>Carvão</option>
+                    <option>Polidor</option>
+                    <option>Inox</option>
+                    <option>Poço 4</option>
+                    <option>Poço 7</option>
+                    <option>Acumulo</option>
+                    <option>INOX</option>
+                    <option>Sanepar Indu</option>
+                    <option>Sanepar ADM</option>
+                    <option>Efluente Industrial</option>
+                  </select>
                 </div>
                 <div class="col-6 col-md-2 param-pair">
                   <label for="fInicial">Início</label>
@@ -263,7 +344,7 @@
               <div class="row g-2">
                 <div class="col-12 col-md-5 param-pair">
                   <label for="fAspecto">Aspecto visual</label>
-                  <select class="form-select" id="fAspecto" name="Aspecto_Visual">
+                  <select class="form-control" id="fAspecto" name="Aspecto_Visual">
                     <option value="">— Selecione —</option>
                     <option>Límpido</option>
                     <option>Turvo</option>
@@ -272,108 +353,84 @@
                     <option>Sem Cor</option>
                   </select>
                 </div>
-                <div class="col-12 col-md-7">
-                  <div class="param-group">
-                    <div class="param-pair">
-                      <label for="fCorVis">Cor visual <span style="color:#9ca3af;font-weight:400">(uH)</span></label>
-                      <input type="number" step="0.01" min="0" class="form-control" id="fCorVis" name="Cor_Visual" placeholder="0">
-                    </div>
-                    <div class="param-pair">
-                      <label for="fVisualAp">Aparelho / Leitura</label>
-                      <input type="text" class="form-control" id="fVisualAp" name="Visual_Aparelho" placeholder="Modelo ou valor">
-                    </div>
-                  </div>
+                <div class="col-6 col-md-4 param-pair">
+                  <label for="fCorVis">Cor visual <span style="color:#9ca3af;font-weight:400">(uH)</span></label>
+                  <input type="number" step="0.01" min="0" class="form-control" id="fCorVis" name="Cor_Visual" placeholder="0.00">
                 </div>
               </div>
             </div>
 
-            <!-- ③ Parâmetros Químicos -->
+            <!-- ③ Parâmetros Químicos — valores medidos -->
             <div class="form-section">
               <div class="form-section-title"><i class="bi bi-droplet-half"></i>Parâmetros Químicos</div>
               <div class="row g-2">
-
-                <div class="col-12 col-md-6">
-                  <div class="param-group">
-                    <div class="param-pair">
-                      <label for="fpH">pH <span style="color:#9ca3af;font-weight:400">(6,5–9,5)</span></label>
-                      <input type="number" step="0.01" min="0" max="14" class="form-control" id="fpH" name="pH" placeholder="7.00">
-                    </div>
-                    <div class="param-pair">
-                      <label for="fpHAp">pH — aparelho</label>
-                      <input type="text" class="form-control" id="fpHAp" name="pH_Aparelho" placeholder="Modelo/ID">
-                    </div>
-                  </div>
+                <div class="col-6 col-md-4 param-pair">
+                  <label for="fpH">pH <span style="color:#9ca3af;font-weight:400">(6,5–9,5)</span></label>
+                  <input type="number" step="0.01" min="0" max="14" class="form-control" id="fpH" name="pH" placeholder="7.00">
                 </div>
-
-                <div class="col-12 col-md-6">
-                  <div class="param-group">
-                    <div class="param-pair">
-                      <label for="fCloro">Cloro <span style="color:#9ca3af;font-weight:400">(mg/L)</span></label>
-                      <input type="number" step="0.01" min="0" class="form-control" id="fCloro" name="Cloro" placeholder="0.20">
-                    </div>
-                    <div class="param-pair">
-                      <label for="fCloroAp">Cloro — aparelho</label>
-                      <input type="text" class="form-control" id="fCloroAp" name="Cloro_Aparelho" placeholder="Modelo/ID">
-                    </div>
-                  </div>
+                <div class="col-6 col-md-4 param-pair">
+                  <label for="fCloro">Cloro <span style="color:#9ca3af;font-weight:400">(mg/L)</span></label>
+                  <input type="number" step="0.01" min="0" class="form-control" id="fCloro" name="Cloro" placeholder="0.20">
                 </div>
-
-                <div class="col-12 col-md-6">
-                  <div class="param-group">
-                    <div class="param-pair">
-                      <label for="fTurb">Turbidez <span style="color:#9ca3af;font-weight:400">(uT)</span></label>
-                      <input type="number" step="0.01" min="0" class="form-control" id="fTurb" name="Turbidez" placeholder="0.00">
-                    </div>
-                    <div class="param-pair">
-                      <label for="fTurbAp">Turbidez — aparelho</label>
-                      <input type="text" class="form-control" id="fTurbAp" name="Turbidez_Aparelho" placeholder="Modelo/ID">
-                    </div>
-                  </div>
+                <div class="col-6 col-md-4 param-pair">
+                  <label for="fTurb">Turbidez <span style="color:#9ca3af;font-weight:400">(uT)</span></label>
+                  <input type="number" step="0.01" min="0" class="form-control" id="fTurb" name="Turbidez" placeholder="0.00">
                 </div>
-
-                <div class="col-12 col-md-6">
-                  <div class="param-group">
-                    <div class="param-pair">
-                      <label for="fAlc">Alcalinidade <span style="color:#9ca3af;font-weight:400">(mg/L)</span></label>
-                      <input type="number" step="0.01" min="0" class="form-control" id="fAlc" name="Alcalinidade" placeholder="0.00">
-                    </div>
-                    <div class="param-pair">
-                      <label for="fAlcAp">Alcalinidade — aparelho</label>
-                      <input type="text" class="form-control" id="fAlcAp" name="Alcalinidade_Aparelho" placeholder="Modelo/ID">
-                    </div>
-                  </div>
+                <div class="col-6 col-md-4 param-pair">
+                  <label for="fAlc">Alcalinidade <span style="color:#9ca3af;font-weight:400">(mg/L)</span></label>
+                  <input type="number" step="0.01" min="0" class="form-control" id="fAlc" name="Alcalinidade" placeholder="0.00">
                 </div>
-
-                <div class="col-12 col-md-6">
-                  <div class="param-group">
-                    <div class="param-pair">
-                      <label for="fFerro">Ferro <span style="color:#9ca3af;font-weight:400">(mg/L)</span></label>
-                      <input type="number" step="0.001" min="0" class="form-control" id="fFerro" name="Ferro" placeholder="0.000">
-                    </div>
-                    <div class="param-pair">
-                      <label for="fFerroAp">Ferro — aparelho</label>
-                      <input type="text" class="form-control" id="fFerroAp" name="Ferro_Aparelho" placeholder="Modelo/ID">
-                    </div>
-                  </div>
+                <div class="col-6 col-md-4 param-pair">
+                  <label for="fFerro">Ferro <span style="color:#9ca3af;font-weight:400">(mg/L)</span></label>
+                  <input type="number" step="0.001" min="0" class="form-control" id="fFerro" name="Ferro" placeholder="0.000">
                 </div>
-
-                <div class="col-12 col-md-6">
-                  <div class="param-group">
-                    <div class="param-pair">
-                      <label for="fDureza">Dureza <span style="color:#9ca3af;font-weight:400">(mg/L)</span></label>
-                      <input type="number" step="0.01" min="0" class="form-control" id="fDureza" name="Dureza" placeholder="0.00">
-                    </div>
-                    <div class="param-pair">
-                      <label for="fDurezaAp">Dureza — aparelho</label>
-                      <input type="text" class="form-control" id="fDurezaAp" name="Dureza_Aparelho" placeholder="Modelo/ID">
-                    </div>
-                  </div>
+                <div class="col-6 col-md-4 param-pair">
+                  <label for="fDureza">Dureza <span style="color:#9ca3af;font-weight:400">(mg/L)</span></label>
+                  <input type="number" step="0.01" min="0" class="form-control" id="fDureza" name="Dureza" placeholder="0.00">
                 </div>
-
               </div>
             </div>
 
-            <!-- ④ Observações -->
+            <!-- ④ Leitura dos Aparelhos -->
+            <div class="form-section">
+              <div class="form-section-title"><i class="bi bi-rulers"></i>Leitura dos Aparelhos</div>
+              <div class="row g-2">
+                <div class="col-6 col-md-3 param-pair">
+                  <label for="fVisualAp">Aparelho Aspecto</label>
+                  <input type="text" class="form-control" id="fVisualAp" name="Visual_Aparelho" placeholder="Modelo/ID">
+                </div>
+                <div class="col-6 col-md-3 param-pair">
+                  <label for="fCorAp">Aparelho Cor <span style="color:#9ca3af;font-weight:400">(uH)</span></label>
+                  <input type="number" step="0.01" min="0" class="form-control" id="fCorAp" name="Cor_Aparelho" placeholder="0.00">
+                </div>
+                <div class="col-6 col-md-3 param-pair">
+                  <label for="fpHAp">Aparelho pH</label>
+                  <input type="number" step="0.01" min="0" max="14" class="form-control" id="fpHAp" name="pH_Aparelho" placeholder="7.00">
+                </div>
+                <div class="col-6 col-md-3 param-pair">
+                  <label for="fCloroAp">Aparelho Cloro <span style="color:#9ca3af;font-weight:400">(mg/L)</span></label>
+                  <input type="number" step="0.01" min="0" class="form-control" id="fCloroAp" name="Cloro_Aparelho" placeholder="0.20">
+                </div>
+                <div class="col-6 col-md-3 param-pair">
+                  <label for="fTurbAp">Aparelho Turbidez <span style="color:#9ca3af;font-weight:400">(uT)</span></label>
+                  <input type="number" step="0.01" min="0" class="form-control" id="fTurbAp" name="Turbidez_Aparelho" placeholder="0.00">
+                </div>
+                <div class="col-6 col-md-3 param-pair">
+                  <label for="fAlcAp">Aparelho Alcalinidade</label>
+                  <input type="number" step="0.01" min="0" class="form-control" id="fAlcAp" name="Alcalinidade_Aparelho" placeholder="0.00">
+                </div>
+                <div class="col-6 col-md-3 param-pair">
+                  <label for="fFerroAp">Aparelho Ferro <span style="color:#9ca3af;font-weight:400">(mg/L)</span></label>
+                  <input type="number" step="0.001" min="0" class="form-control" id="fFerroAp" name="Ferro_Aparelho" placeholder="0.000">
+                </div>
+                <div class="col-6 col-md-3 param-pair">
+                  <label for="fDurezaAp">Aparelho Dureza <span style="color:#9ca3af;font-weight:400">(mg/L)</span></label>
+                  <input type="number" step="0.01" min="0" class="form-control" id="fDurezaAp" name="Dureza_Aparelho" placeholder="0.00">
+                </div>
+              </div>
+            </div>
+
+            <!-- ⑤ Observações -->
             <div class="form-section">
               <div class="form-section-title"><i class="bi bi-chat-left-text"></i>Observações</div>
               <div class="param-pair">
@@ -387,13 +444,35 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-secondary" id="btnCancelar">Cancelar</button>
           <button type="button" class="btn" id="btnSalvar"
             style="background:linear-gradient(135deg,#2B286F,#4a47a3);color:white;border:none;min-width:110px;">
             <span id="btnSalvarTxt"><i class="bi bi-check-lg me-1"></i>Salvar</span>
             <span id="btnSalvarLoad" style="display:none;">
               <span class="spinner-border spinner-border-sm me-1"></span>Salvando...
             </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal confirmação cancelar -->
+  <div class="modal fade" id="modalConfirmaCancelar" tabindex="-1" style="z-index:2060;">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content">
+        <div class="modal-header py-2" style="background:linear-gradient(135deg,#2B286F,#1e1f5c);">
+          <h6 class="modal-title text-white mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Descartar lançamento?</h6>
+        </div>
+        <div class="modal-body text-center py-3" style="font-size:.9rem;">
+          Os dados preenchidos serão perdidos.<br>Deseja sair mesmo assim?
+        </div>
+        <div class="modal-footer py-2 justify-content-center gap-2">
+          <button type="button" class="btn btn-sm btn-secondary" id="btnVoltarForm">
+            <i class="bi bi-arrow-left me-1"></i>Voltar
+          </button>
+          <button type="button" class="btn btn-sm btn-danger" id="btnConfirmarSair">
+            <i class="bi bi-x-lg me-1"></i>Sair sem salvar
           </button>
         </div>
       </div>
@@ -428,10 +507,42 @@
         dtBuildFilters(this.api(), 'tblMedidor_filter', [
           { idx: 1, label: 'Turno...',    w: '110px' },
           { idx: 2, label: 'Operador...', w: '140px' },
-          { idx: 3, label: 'Local...',    w: '120px' },
+          { idx: 4, label: 'Local...',    w: '120px' },
           { idx: 0, label: 'Data...',     w: '120px' },
         ]);
       },
+    });
+
+    // Select2 — campos fixos
+    const s2opts = { dropdownParent: $('#medidorModal'), allowClear: true, width: '100%' };
+    $('#fTurno').select2({ ...s2opts, placeholder: '— Selecione —' });
+    $('#fAspecto').select2({ ...s2opts, placeholder: '— Selecione —' });
+    $('#fLocal').select2({ ...s2opts, placeholder: '— Selecione o local —' });
+
+    // Select2 AJAX — Operador (busca em V_RECURSOS_HUMANOS)
+    $('#fOperador').select2({
+      dropdownParent: $('#medidorModal'),
+      placeholder: 'Digite o nome do operador...',
+      allowClear: true,
+      width: '100%',
+      minimumInputLength: 2,
+      language: { inputTooShort: () => 'Digite ao menos 2 caracteres...' },
+      ajax: {
+        url: '/api/operadores',
+        dataType: 'json',
+        delay: 280,
+        data: p => ({ q: p.term || '' }),
+        processResults: d => ({ results: d }),
+        cache: true,
+      },
+    });
+
+    // Auto-preenche matrícula ao selecionar operador
+    $('#fOperador').on('select2:select', function(e) {
+      document.getElementById('fMatricula').value = e.params.data.matricula || '';
+    });
+    $('#fOperador').on('select2:clear', function() {
+      document.getElementById('fMatricula').value = '';
     });
 
     // Pré-preenche data de hoje
@@ -439,7 +550,29 @@
     document.getElementById('fData').value = today;
 
     const modal = new bootstrap.Modal(document.getElementById('medidorModal'));
+    const modalConfirma = new bootstrap.Modal(document.getElementById('modalConfirmaCancelar'));
+
     document.getElementById('btnCadastrar').addEventListener('click', () => modal.show());
+
+    // Cancelar → pede confirmação
+    document.getElementById('btnCancelar').addEventListener('click', function() {
+      const form = document.getElementById('formMedidor');
+      // Verifica se algum campo foi preenchido
+      const preenchido = Array.from(form.elements).some(el =>
+        el.type !== 'hidden' && el.name !== '_csrf' && el.readOnly !== true && el.value && el.value !== ''
+      );
+      if (preenchido) {
+        modalConfirma.show();
+      } else {
+        modal.hide();
+      }
+    });
+
+    document.getElementById('btnVoltarForm').addEventListener('click', () => modalConfirma.hide());
+    document.getElementById('btnConfirmarSair').addEventListener('click', function() {
+      modalConfirma.hide();
+      modal.hide();
+    });
 
     document.getElementById('btnSalvar').addEventListener('click', async function () {
       const form = document.getElementById('formMedidor');
@@ -468,6 +601,11 @@
           showAlert('Lançamento salvo com sucesso!', 'success');
           if (json.csrfToken) document.getElementById('csrfInput').value = json.csrfToken;
           form.reset();
+          $('#fTurno').val('').trigger('change');
+          $('#fAspecto').val('').trigger('change');
+          $('#fLocal').val('').trigger('change');
+          $('#fOperador').val(null).trigger('change');
+          document.getElementById('fMatricula').value = '';
           document.getElementById('fData').value = today;
           setTimeout(() => { modal.hide(); location.reload(); }, 1200);
         } else {

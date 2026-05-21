@@ -156,4 +156,31 @@ async function getHomeStats(req, res) {
   }
 }
 
-module.exports = { renderMedidor, cadastrarLancamento, getHomeStats };
+async function getOperadores(req, res) {
+  const q = String(req.query.q || '').trim();
+  try {
+    const pool = await getPool();
+    const result = await pool.request()
+      .input('Q', sql.VarChar(200), '%' + q.toUpperCase() + '%')
+      .query(`
+        SELECT DISTINCT
+          RTRIM(LTRIM(MATRICULA)) AS MATRICULA,
+          RTRIM(LTRIM(NOME))      AS NOME
+        FROM V_RECURSOS_HUMANOS
+        WHERE MATRICULA IS NOT NULL AND MATRICULA <> ''
+          AND NOME IS NOT NULL AND NOME <> ''
+          AND UPPER(NOME) LIKE @Q
+        ORDER BY NOME
+      `);
+    res.json(result.recordset.map(r => ({
+      id:        r.NOME,
+      text:      r.NOME.trim() + '  (' + r.MATRICULA.trim() + ')',
+      matricula: r.MATRICULA.trim(),
+    })));
+  } catch (err) {
+    console.error('[getOperadores]', err);
+    res.json([]);
+  }
+}
+
+module.exports = { renderMedidor, cadastrarLancamento, getHomeStats, getOperadores };

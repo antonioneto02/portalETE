@@ -6,11 +6,13 @@ const {
   renderMedidor,
   cadastrarLancamento,
   getHomeStats,
+  getOperadores,
 } = require('../controllers/medidorController');
 
 router.get('/home',    requireAuth, renderHome);
 router.get('/medidor', requireAuth, renderMedidor);
 router.post('/medidor/cadastrar', requireAuth, cadastrarLancamento);
-router.get('/api/home-stats', requireAuth, getHomeStats);
+router.get('/api/home-stats',  requireAuth, getHomeStats);
+router.get('/api/operadores',  requireAuth, getOperadores);
 
 module.exports = router;
