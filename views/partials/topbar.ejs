@@ -1,6 +1,9 @@
 <div class="topbar">
   <div class="topbar-left">
-    <a href="/home" class="topbar-brand d-md-none text-decoration-none">
+    <button class="nav-hamburger d-md-none" id="navHamburger" aria-label="Menu">
+      <i class="bi bi-list"></i>
+    </button>
+    <a href="/home" class="topbar-brand d-md-none text-decoration-none ms-2">
       <img src="/css/logo-cini.png" alt="ETE">
       <span>Portal ETE</span>
     </a>
@@ -19,3 +22,45 @@
     </a>
   </div>
 </div>
+
+<!-- Overlay nav mobile -->
+<div class="mob-overlay" id="mobOverlay">
+  <div class="mob-menu">
+    <div class="mob-menu-head">
+      <img src="/css/logo-cini.png" alt="ETE" style="height:28px;">
+      <span>Portal ETE</span>
+      <button class="mob-close" id="mobClose"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <nav>
+      <a href="/home"    class="mob-link <%= typeof currentPath!=='undefined'&&currentPath==='/home'    ? 'mob-active' : '' %>">
+        <i class="bi bi-house-fill"></i><span>Início</span>
+      </a>
+      <a href="/medidor" class="mob-link <%= typeof currentPath!=='undefined'&&currentPath==='/medidor' ? 'mob-active' : '' %>">
+        <i class="bi bi-speedometer2"></i><span>Medidor ETA</span>
+      </a>
+      <hr class="mob-divider">
+      <a href="/logout"  class="mob-link mob-logout">
+        <i class="bi bi-box-arrow-right"></i><span>Sair</span>
+      </a>
+    </nav>
+    <div class="mob-user">
+      <i class="bi bi-person-circle me-2"></i><%= username %>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var btn=document.getElementById('navHamburger');
+  var ov=document.getElementById('mobOverlay');
+  var cl=document.getElementById('mobClose');
+  if(!btn||!ov) return;
+  function open(){ ov.classList.add('open'); document.body.style.overflow='hidden'; }
+  function close(){ ov.classList.remove('open'); document.body.style.overflow=''; }
+  btn.addEventListener('click',open);
+  cl.addEventListener('click',close);
+  ov.addEventListener('click',function(e){ if(e.target===ov) close(); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') close(); });
+  ov.querySelectorAll('.mob-link').forEach(function(a){ a.addEventListener('click',close); });
+})();
+</script>
