@@ -24,12 +24,11 @@
     .kpi-unit { font-size: .72rem; opacity: .85; font-weight: 500; margin-left: 2px; }
     .kpi-lbl  { font-size: .72rem; opacity: .88; letter-spacing: .2px; }
     .kpi-sub  { font-size: .68rem; opacity: .75; }
-    .chart-card { height: 100%; }
-    .chart-card .card-body { position: relative; min-height: 220px; }
+    .chart-wrap { position: relative; height: 260px; }
     @media (max-width: 767px) {
       .kpi-grid { grid-template-columns: repeat(3, 1fr); gap: .5rem; }
       .kpi-val  { font-size: 1.35rem; }
-      .chart-card .card-body { min-height: 180px; }
+      .chart-wrap { height: 200px; }
     }
     @media (max-width: 400px) {
       .kpi-grid { grid-template-columns: repeat(2, 1fr); }
@@ -107,13 +106,13 @@
           <div class="col-12 col-lg-8">
             <div class="card chart-card">
               <div class="card-header"><i class="bi bi-graph-up me-2"></i>Tendência de qualidade — últimas medições</div>
-              <div class="card-body"><canvas id="chartTrend"></canvas></div>
+              <div class="card-body p-2"><div class="chart-wrap"><canvas id="chartTrend"></canvas></div></div>
             </div>
           </div>
           <div class="col-12 col-sm-6 col-lg-4">
             <div class="card chart-card">
               <div class="card-header"><i class="bi bi-clock me-2"></i>Registros por turno</div>
-              <div class="card-body"><canvas id="chartTurno"></canvas></div>
+              <div class="card-body p-2"><div class="chart-wrap"><canvas id="chartTurno"></canvas></div></div>
             </div>
           </div>
         </div>
@@ -123,13 +122,13 @@
           <div class="col-12 col-sm-6 col-lg-6">
             <div class="card chart-card">
               <div class="card-header"><i class="bi bi-bar-chart me-2"></i>Registros por dia</div>
-              <div class="card-body"><canvas id="chartRegistros"></canvas></div>
+              <div class="card-body p-2"><div class="chart-wrap"><canvas id="chartRegistros"></canvas></div></div>
             </div>
           </div>
           <div class="col-12 col-sm-6 col-lg-6">
             <div class="card chart-card">
               <div class="card-header"><i class="bi bi-distribute-vertical me-2"></i>Distribuição de pH</div>
-              <div class="card-body"><canvas id="chartPHDist"></canvas></div>
+              <div class="card-body p-2"><div class="chart-wrap"><canvas id="chartPHDist"></canvas></div></div>
             </div>
           </div>
         </div>
