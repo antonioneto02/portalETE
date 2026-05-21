@@ -70,25 +70,28 @@
                 </thead>
                 <tbody>
                 <% lancamentos.forEach(function(l) {
-                  function fmt(v) { return (v==null||v==='')?'—':Number(v).toFixed(2); }
+                  // Valores armazenados como int × 100 → dividir para exibir
+                  function d100(v) { return (v!=null && v!=='') ? v/100 : null; }
+                  function fmt(v) { const n=d100(v); return n==null?'—':n.toFixed(2); }
                   function fmtDate(d) {
                     if(!d) return '—';
                     try { return new Date(d).toLocaleDateString('pt-BR'); } catch(e){ return String(d).substring(0,10); }
                   }
-                  function cls(v, min, max) {
-                    if(v==null||v==='') return '';
-                    const n=parseFloat(v);
-                    if(isNaN(n)) return '';
-                    if(min!=null&&max!=null){ if(n>=min&&n<=max)return 'val-ok'; if(n<min*0.8||n>max*1.2)return 'val-bad'; return 'val-warn'; }
+                  function turnoLabel(t) { return t===1?'Manhã':t===2?'Tarde':t===3?'Noite':t||'—'; }
+                  function cls(raw, min, max) {
+                    const v = d100(raw);
+                    if(v==null) return '';
+                    if(min!=null&&max!=null){ if(v>=min&&v<=max)return 'val-ok'; if(v<min*0.8||v>max*1.2)return 'val-bad'; return 'val-warn'; }
                     return '';
                   }
                 %>
+
                   <tr>
                     <td><%= fmtDate(l.Data) %></td>
                     <td>
                       <% if(l.turno) { %>
-                        <span class="badge-turno" style="background:<%= l.turno==='Manhã'?'#16a34a':l.turno==='Tarde'?'#d97706':'#2B286F' %>;color:white;">
-                          <%= l.turno %>
+                        <span class="badge-turno" style="background:<%= l.turno===1?'#16a34a':l.turno===2?'#d97706':'#2B286F' %>;color:white;">
+                          <%= turnoLabel(l.turno) %>
                         </span>
                       <% } else { %>—<% } %>
                     </td>

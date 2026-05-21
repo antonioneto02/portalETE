@@ -57,11 +57,13 @@ async function cadastrarLancamento(req, res) {
     const r = pool.request();
     const b = req.body;
 
-    const toFloat = v => (v !== undefined && v !== '' && v !== null) ? parseFloat(v) : null;
-    const toStr   = v => (v !== undefined && v !== '') ? String(v).trim() : null;
+    const toStr  = v => (v !== undefined && v !== '' && v !== null) ? String(v).trim() : null;
+    // Valores são armazenados como inteiro × 100 (ex: 7.32 → 732)
+    const toInt  = v => (v !== undefined && v !== '' && v !== null) ? Math.round(parseFloat(v) * 100) : null;
+    const toTurno = v => ({ 'Manhã': 1, 'Tarde': 2, 'Noite': 3 }[v] ?? null);
 
-    r.input('Data',                    sql.Date,         b.Data || null);
-    r.input('turno',                   sql.VarChar(50),  toStr(b.turno));
+    r.input('Data',                    sql.Date,       b.Data || null);
+    r.input('turno',                   sql.Int,        toTurno(b.turno));
     r.input('matricula',               sql.VarChar(50),  toStr(b.matricula));
     r.input('Operador',                sql.VarChar(100), toStr(b.Operador));
     r.input('LOCAL',                   sql.VarChar(100), toStr(b.LOCAL));
@@ -71,20 +73,20 @@ async function cadastrarLancamento(req, res) {
     r.input('Ligado',                  sql.VarChar(10),  toStr(b.Ligado));
     r.input('Aspecto_Visual',          sql.VarChar(100), toStr(b.Aspecto_Visual));
     r.input('Visual_Aparelho',         sql.VarChar(100), toStr(b.Visual_Aparelho));
-    r.input('Cor_Visual',              sql.Decimal(10,2),toFloat(b.Cor_Visual));
-    r.input('Cor_Aparelho',            sql.VarChar(100), toStr(b.Cor_Aparelho));
-    r.input('pH',                      sql.Decimal(10,2),toFloat(b.pH));
-    r.input('pH_Aparelho',             sql.VarChar(100), toStr(b.pH_Aparelho));
-    r.input('Cloro',                   sql.Decimal(10,2),toFloat(b.Cloro));
-    r.input('Cloro_Aparelho',          sql.VarChar(100), toStr(b.Cloro_Aparelho));
-    r.input('Alcalinidade',            sql.Decimal(10,2),toFloat(b.Alcalinidade));
-    r.input('Alcalinidade_Aparelho',   sql.VarChar(100), toStr(b.Alcalinidade_Aparelho));
-    r.input('Turbidez',                sql.Decimal(10,2),toFloat(b.Turbidez));
-    r.input('Turbidez_Aparelho',       sql.VarChar(100), toStr(b.Turbidez_Aparelho));
-    r.input('Ferro',                   sql.Decimal(10,2),toFloat(b.Ferro));
-    r.input('Ferro_Aparelho',          sql.VarChar(100), toStr(b.Ferro_Aparelho));
-    r.input('Dureza',                  sql.Decimal(10,2),toFloat(b.Dureza));
-    r.input('Dureza_Aparelho',         sql.VarChar(100), toStr(b.Dureza_Aparelho));
+    r.input('Cor_Visual',              sql.Int,        toInt(b.Cor_Visual));
+    r.input('Cor_Aparelho',            sql.Int,        toInt(b.Cor_Aparelho));
+    r.input('pH',                      sql.Int,        toInt(b.pH));
+    r.input('pH_Aparelho',             sql.Int,        toInt(b.pH_Aparelho));
+    r.input('Cloro',                   sql.Int,        toInt(b.Cloro));
+    r.input('Cloro_Aparelho',          sql.Int,        toInt(b.Cloro_Aparelho));
+    r.input('Alcalinidade',            sql.Int,        toInt(b.Alcalinidade));
+    r.input('Alcalinidade_Aparelho',   sql.Int,        toInt(b.Alcalinidade_Aparelho));
+    r.input('Turbidez',                sql.Int,        toInt(b.Turbidez));
+    r.input('Turbidez_Aparelho',       sql.Int,        toInt(b.Turbidez_Aparelho));
+    r.input('Ferro',                   sql.Int,        toInt(b.Ferro));
+    r.input('Ferro_Aparelho',          sql.Int,        toInt(b.Ferro_Aparelho));
+    r.input('Dureza',                  sql.Int,        toInt(b.Dureza));
+    r.input('Dureza_Aparelho',         sql.Int,        toInt(b.Dureza_Aparelho));
     r.input('OBS',                     sql.VarChar(500), toStr(b.OBS));
 
     await r.query(`

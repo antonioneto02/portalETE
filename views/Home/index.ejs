@@ -4,6 +4,37 @@
   <title>Portal ETE — Início</title>
   <%- include('../System/headIncludes.ejs') %>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <style>
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: .65rem;
+      margin-bottom: 1.2rem;
+    }
+    .kpi-card {
+      border-radius: 10px;
+      padding: 14px 16px;
+      color: white;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.13);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .kpi-val  { font-size: 1.7rem; font-weight: 700; line-height: 1; letter-spacing: -.5px; }
+    .kpi-unit { font-size: .72rem; opacity: .85; font-weight: 500; margin-left: 2px; }
+    .kpi-lbl  { font-size: .72rem; opacity: .88; letter-spacing: .2px; }
+    .kpi-sub  { font-size: .68rem; opacity: .75; }
+    .chart-card { height: 100%; }
+    .chart-card .card-body { position: relative; min-height: 220px; }
+    @media (max-width: 767px) {
+      .kpi-grid { grid-template-columns: repeat(3, 1fr); gap: .5rem; }
+      .kpi-val  { font-size: 1.35rem; }
+      .chart-card .card-body { min-height: 180px; }
+    }
+    @media (max-width: 400px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
 </head>
 <body>
   <div class="layout-container">
@@ -12,163 +43,258 @@
       <%- include('../partials/topbar', { pageTitle: 'Início', pageIcon: 'house', username: username }) %>
 
       <div class="content">
-        <!-- KPI cards -->
-        <div class="indicators-bar" id="kpiBar">
-          <div class="indicator-card" style="background:linear-gradient(135deg,#64748b,#94a3b8);">
-            <div class="indicator-val">—</div>
-            <div class="indicator-lbl">Carregando...</div>
+
+        <%
+          const s = stats;
+          const l = s.latest;
+          function fv(v, dec) {
+            if (v == null) return '—';
+            return Number(v).toFixed(dec != null ? dec : 2);
+          }
+          function statusBg(v, min, max) {
+            if (v == null) return ['#64748b','#94a3b8'];
+            if (min != null && max != null) {
+              if (v >= min && v <= max) return ['#166534','#16a34a'];
+              if (v < min * 0.85 || v > max * 1.15) return ['#991b1b','#b91c1c'];
+              return ['#92400e','#d97706'];
+            }
+            return ['#1e40af','#2B286F'];
+          }
+          const KPIS = [
+            { lbl:'pH',          unit:'',       v: l && l.pH,          min:6.5, max:9.5  },
+            { lbl:'Cloro',       unit:'mg/L',   v: l && l.Cloro,       min:0.2, max:5.0  },
+            { lbl:'Turbidez',    unit:'uT',     v: l && l.Turbidez,    min:0,   max:1.0  },
+            { lbl:'Cor',         unit:'uH',     v: l && l.Cor_Visual,  min:0,   max:15   },
+            { lbl:'Ferro',       unit:'mg/L',   v: l && l.Ferro,       min:0,   max:0.3  },
+            { lbl:'Alcalinidade',unit:'mg/L',   v: l && l.Alcalinidade,min:null,max:null },
+          ];
+        %>
+
+        <!-- KPIs -->
+        <div class="kpi-grid">
+          <% KPIS.forEach(function(k) {
+            const bg = statusBg(k.v, k.min, k.max);
+          %>
+          <div class="kpi-card" style="background:linear-gradient(135deg,<%=bg[0]%>,<%=bg[1]%>);">
+            <div><span class="kpi-val"><%=fv(k.v)%></span><span class="kpi-unit"><%=k.unit%></span></div>
+            <div class="kpi-lbl"><%=k.lbl%></div>
+            <% if (k.min != null) { %><div class="kpi-sub">Ref: <%=k.min%>–<%=k.max%></div><% } %>
+          </div>
+          <% }); %>
+          <div class="kpi-card" style="background:linear-gradient(135deg,#1e40af,#2B286F);">
+            <div><span class="kpi-val"><%=s.totalHoje%></span></div>
+            <div class="kpi-lbl">Registros hoje</div>
+            <div class="kpi-sub">Total: <%=s.totalGeral%></div>
+          </div>
+          <% if (s.conformidade) { %>
+          <div class="kpi-card" style="background:linear-gradient(135deg,#065f46,#059669);">
+            <div><span class="kpi-val"><%=s.conformidade.ph_conf%></span><span class="kpi-unit">%</span></div>
+            <div class="kpi-lbl">pH conforme</div>
+            <div class="kpi-sub">PORTARIA 888</div>
+          </div>
+          <% } %>
+          <% if (l) { %>
+          <div class="kpi-card" style="background:linear-gradient(135deg,#334155,#64748b);">
+            <div class="kpi-lbl" style="font-size:.7rem;opacity:1;">Última medição</div>
+            <div style="font-size:.82rem;font-weight:600;"><%=l.Data%></div>
+            <div class="kpi-sub"><%=l.turnoLabel%> · <%=l.LOCAL||'—'%></div>
+          </div>
+          <% } %>
+        </div>
+
+        <!-- Row 1: Tendência + Distribuição turno -->
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-lg-8">
+            <div class="card chart-card">
+              <div class="card-header"><i class="bi bi-graph-up me-2"></i>Tendência de qualidade — últimas medições</div>
+              <div class="card-body"><canvas id="chartTrend"></canvas></div>
+            </div>
+          </div>
+          <div class="col-12 col-sm-6 col-lg-4">
+            <div class="card chart-card">
+              <div class="card-header"><i class="bi bi-clock me-2"></i>Registros por turno</div>
+              <div class="card-body"><canvas id="chartTurno"></canvas></div>
+            </div>
           </div>
         </div>
 
-        <!-- Charts -->
+        <!-- Row 2: Registros por dia + Distribuição pH -->
         <div class="row g-3">
-          <div class="col-12 col-lg-8">
-            <div class="card">
-              <div class="card-header d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-graph-up me-2"></i>Tendência — últimos 30 dias</span>
-              </div>
-              <div class="card-body" style="position:relative;height:260px;">
-                <canvas id="trendChart"></canvas>
-              </div>
+          <div class="col-12 col-sm-6 col-lg-6">
+            <div class="card chart-card">
+              <div class="card-header"><i class="bi bi-bar-chart me-2"></i>Registros por dia</div>
+              <div class="card-body"><canvas id="chartRegistros"></canvas></div>
             </div>
           </div>
-          <div class="col-12 col-lg-4">
-            <div class="card h-100">
-              <div class="card-header"><i class="bi bi-droplet me-2"></i>Qualidade atual</div>
-              <div class="card-body p-0">
-                <table class="table table-sm mb-0" id="qualTable">
-                  <tbody>
-                    <tr><td colspan="3" class="text-center text-muted py-3">Carregando...</td></tr>
-                  </tbody>
-                </table>
-              </div>
+          <div class="col-12 col-sm-6 col-lg-6">
+            <div class="card chart-card">
+              <div class="card-header"><i class="bi bi-distribute-vertical me-2"></i>Distribuição de pH</div>
+              <div class="card-body"><canvas id="chartPHDist"></canvas></div>
             </div>
           </div>
         </div>
+
       </div>
     </div>
   </div>
 
   <script>
   (function () {
-    const FMT = v => (v == null ? '—' : Number(v).toFixed(2));
-    const PARAMS = [
-      { key:'pH',          label:'pH',           color:'#2B286F', min:6.5, max:9.5,  unit:'' },
-      { key:'Cloro',       label:'Cloro',        color:'#16a34a', min:0.2, max:5.0,  unit:' mg/L' },
-      { key:'Turbidez',    label:'Turbidez',     color:'#d97706', min:0,   max:1.0,  unit:' uT' },
-      { key:'Cor_Visual',  label:'Cor',          color:'#7c3aed', min:0,   max:15,   unit:' uH' },
-      { key:'Alcalinidade',label:'Alcalinidade', color:'#0d9488', min:null,max:null, unit:' mg/L' },
-      { key:'Ferro',       label:'Ferro',        color:'#b91c1c', min:0,   max:0.3,  unit:' mg/L' },
-      { key:'Dureza',      label:'Dureza',       color:'#0369a1', min:null,max:null, unit:' mg/L' },
-    ];
+    const S = <%- statsJson %>;
 
-    function statusColor(p, v) {
-      if (v == null || p.min == null) return '#64748b';
-      if (v >= p.min && v <= p.max) return '#16a34a';
-      if (v < p.min * 0.8 || v > p.max * 1.2) return '#b91c1c';
-      return '#d97706';
+    const FONT = { size: 11, family: "'Inter','Segoe UI',sans-serif" };
+    Chart.defaults.font = FONT;
+    Chart.defaults.color = '#555';
+
+    function baseOpts(title) {
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top', labels: { boxWidth: 11, font: FONT, padding: 10 } },
+          tooltip: { mode: 'index', intersect: false },
+        },
+      };
     }
 
-    let trendChart = null;
-
-    fetch('/api/home-stats')
-      .then(r => r.json())
-      .then(data => {
-        renderKpi(data.latest, data.totalHoje);
-        renderQualTable(data.latest);
-        renderChart(data.trend);
-      })
-      .catch(() => {
-        document.getElementById('kpiBar').innerHTML =
-          '<p class="text-muted small ms-1">Erro ao carregar indicadores.</p>';
-      });
-
-    function renderKpi(latest, totalHoje) {
-      const bar = document.getElementById('kpiBar');
-      if (!latest) {
-        bar.innerHTML = '<p class="text-muted small ms-1">Nenhum dado encontrado.</p>';
-        return;
-      }
-      const cards = PARAMS.map(p => {
-        const v = latest[p.key];
-        const bg = statusColor(p, v);
-        return `<div class="indicator-card" style="background:linear-gradient(135deg,${bg},${bg}cc);">
-          <div class="indicator-val">${v != null ? Number(v).toFixed(2) : '—'}</div>
-          <div class="indicator-lbl">${p.label}${p.unit ? p.unit : ''}</div>
-        </div>`;
-      });
-      cards.push(`<div class="indicator-card" style="background:linear-gradient(135deg,#334155,#64748b);">
-        <div class="indicator-val">${totalHoje}</div>
-        <div class="indicator-lbl">Registros hoje</div>
-      </div>`);
-      bar.innerHTML = cards.join('');
-    }
-
-    function renderQualTable(latest) {
-      const tb = document.querySelector('#qualTable tbody');
-      if (!latest) { tb.innerHTML = '<tr><td class="text-center text-muted py-3" colspan="3">Sem dados</td></tr>'; return; }
-      const rows = PARAMS.map(p => {
-        const v = latest[p.key];
-        const color = statusColor(p, v);
-        const dot = `<span style="width:10px;height:10px;border-radius:50%;background:${color};display:inline-block;margin-right:6px;"></span>`;
-        return `<tr>
-          <td class="ps-3">${dot}${p.label}</td>
-          <td class="fw-semibold">${v != null ? Number(v).toFixed(2) : '—'}${p.unit}</td>
-          <td class="text-muted pe-3" style="font-size:.75rem;">${
-            p.min != null ? `${p.min}–${p.max}` : ''
-          }</td>
-        </tr>`;
-      });
-      if (latest.Data) {
-        rows.push(`<tr><td colspan="3" class="ps-3 text-muted" style="font-size:.75rem;border-top:1px solid #eee;">
-          Última medição: ${latest.Data}${latest.turno ? ' · ' + latest.turno : ''}
-          ${latest.Operador ? ' · ' + latest.Operador : ''}
-        </td></tr>`);
-      }
-      tb.innerHTML = rows.join('');
-    }
-
-    function renderChart(trend) {
-      if (!trend || !trend.length) return;
-      const labels = trend.map(r => r.dia);
-      const ctx = document.getElementById('trendChart').getContext('2d');
-      if (trendChart) trendChart.destroy();
-      trendChart = new Chart(ctx, {
+    /* ─── 1. Linha: tendência pH + Turbidez ─── */
+    if (S.trend && S.trend.length) {
+      const labels = S.trend.map(r => r.dia);
+      new Chart(document.getElementById('chartTrend'), {
         type: 'line',
         data: {
           labels,
           datasets: [
             {
               label: 'pH',
-              data: trend.map(r => r.ph),
-              borderColor: '#2B286F',
-              backgroundColor: 'rgba(43,40,111,0.08)',
-              tension: 0.3, fill: true, pointRadius: 3,
-            },
-            {
-              label: 'Cloro (mg/L)',
-              data: trend.map(r => r.cloro),
-              borderColor: '#16a34a',
-              backgroundColor: 'rgba(22,163,74,0.08)',
-              tension: 0.3, fill: true, pointRadius: 3,
+              data: S.trend.map(r => r.ph ? +r.ph.toFixed(2) : null),
+              borderColor: '#2B286F', backgroundColor: 'rgba(43,40,111,.1)',
+              tension: .35, fill: true, pointRadius: 3, yAxisID: 'yPH',
             },
             {
               label: 'Turbidez (uT)',
-              data: trend.map(r => r.turbidez),
-              borderColor: '#d97706',
-              backgroundColor: 'rgba(217,119,6,0.08)',
-              tension: 0.3, fill: true, pointRadius: 3,
+              data: S.trend.map(r => r.turbidez ? +r.turbidez.toFixed(2) : null),
+              borderColor: '#d97706', backgroundColor: 'rgba(217,119,6,.08)',
+              tension: .35, fill: false, pointRadius: 3, yAxisID: 'yTurb',
+            },
+            {
+              label: 'Cor (uH)',
+              data: S.trend.map(r => r.cor ? +r.cor.toFixed(2) : null),
+              borderColor: '#7c3aed', backgroundColor: 'rgba(124,58,237,.08)',
+              tension: .35, fill: false, pointRadius: 2, borderDash: [4,3], yAxisID: 'yTurb',
             },
           ],
         },
         options: {
+          ...baseOpts(),
+          interaction: { mode: 'index', intersect: false },
+          scales: {
+            x: { ticks: { font: FONT, maxTicksLimit: 10 }, grid: { color: '#f0f0f0' } },
+            yPH: {
+              type: 'linear', position: 'left',
+              title: { display: true, text: 'pH', font: FONT },
+              min: 5.5, max: 10,
+              ticks: { font: FONT },
+              grid: { color: '#f0f0f0' },
+            },
+            yTurb: {
+              type: 'linear', position: 'right',
+              title: { display: true, text: 'uT / uH', font: FONT },
+              min: 0,
+              ticks: { font: FONT },
+              grid: { drawOnChartArea: false },
+            },
+          },
+        },
+      });
+    }
+
+    /* ─── 2. Rosca: por turno ─── */
+    if (S.byTurno && S.byTurno.length) {
+      new Chart(document.getElementById('chartTurno'), {
+        type: 'doughnut',
+        data: {
+          labels: S.byTurno.map(r => r.turno),
+          datasets: [{
+            data: S.byTurno.map(r => r.total),
+            backgroundColor: ['#16a34a','#d97706','#2B286F','#64748b'],
+            borderWidth: 2, borderColor: '#fff',
+          }],
+        },
+        options: {
           responsive: true,
           maintainAspectRatio: false,
-          interaction: { mode: 'index', intersect: false },
-          plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } } },
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 12, font: FONT, padding: 12 } },
+            tooltip: { callbacks: {
+              label: ctx => ` ${ctx.label}: ${ctx.parsed} (${Math.round(ctx.parsed/S.totalGeral*100)}%)`,
+            }},
+          },
+          cutout: '62%',
+        },
+      });
+    }
+
+    /* ─── 3. Barras: registros por dia ─── */
+    if (S.trend && S.trend.length) {
+      new Chart(document.getElementById('chartRegistros'), {
+        type: 'bar',
+        data: {
+          labels: S.trend.map(r => r.dia),
+          datasets: [{
+            label: 'Registros',
+            data: S.trend.map(r => r.registros),
+            backgroundColor: 'rgba(43,40,111,.75)',
+            borderColor: '#2B286F',
+            borderWidth: 1, borderRadius: 4,
+          }],
+        },
+        options: {
+          ...baseOpts(),
+          plugins: { legend: { display: false } },
           scales: {
-            x: { ticks: { font: { size: 10 }, maxTicksLimit: 10 } },
-            y: { ticks: { font: { size: 10 } }, beginAtZero: false },
+            x: { ticks: { font: FONT, maxTicksLimit: 12 }, grid: { display: false } },
+            y: { ticks: { font: FONT, stepSize: 1 }, beginAtZero: true, grid: { color: '#f0f0f0' } },
+          },
+        },
+      });
+    }
+
+    /* ─── 4. Barras: distribuição pH ─── */
+    if (S.phDist && S.phDist.length) {
+      const inRange = ['6,5–7,0','7,0–7,5','7,5–8,0','8,0–8,5','8,5–9,5'];
+      new Chart(document.getElementById('chartPHDist'), {
+        type: 'bar',
+        data: {
+          labels: S.phDist.map(r => r.faixa),
+          datasets: [{
+            label: 'Medições',
+            data: S.phDist.map(r => r.total),
+            backgroundColor: S.phDist.map(r =>
+              inRange.includes(r.faixa) ? 'rgba(22,163,74,.75)' : 'rgba(185,28,28,.75)'
+            ),
+            borderColor: S.phDist.map(r =>
+              inRange.includes(r.faixa) ? '#16a34a' : '#b91c1c'
+            ),
+            borderWidth: 1, borderRadius: 4,
+          }],
+        },
+        options: {
+          ...baseOpts(),
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: {
+              label: ctx => ` ${ctx.parsed.y} medições`,
+              afterLabel: ctx => {
+                const pct = Math.round(ctx.parsed.y / S.totalGeral * 100);
+                const ok = inRange.includes(ctx.label);
+                return ` ${pct}% do total · ${ok ? '✓ conforme' : '⚠ fora do padrão'}`;
+              },
+            }},
+          },
+          scales: {
+            x: { ticks: { font: FONT }, grid: { display: false } },
+            y: { ticks: { font: FONT, stepSize: 1 }, beginAtZero: true, grid: { color: '#f0f0f0' } },
           },
         },
       });
