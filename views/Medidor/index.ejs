@@ -14,10 +14,13 @@
     .btn-excel { background:#16a34a !important; color:white !important; border:none !important; }
     .btn-excel:hover { background:#15803d !important; }
     @media (max-width:767px) { .dt-buttons { display:none !important; } }
-    #tblMedidor_filter { display:grid !important; grid-template-columns:1fr 1fr; gap:.4rem; width:100%; }
+    #tblMedidor_filter { display:flex !important; flex-wrap:wrap; align-items:center; gap:.4rem; }
     #tblMedidor_filter label { display:none !important; }
-    #tblMedidor_filter > div { width:100% !important; display:block !important; }
-    #tblMedidor_filter > div input { width:100% !important; min-width:0 !important; box-sizing:border-box; }
+    @media (max-width:767px) {
+      #tblMedidor_filter { display:grid !important; grid-template-columns:1fr 1fr; gap:.3rem; width:100%; }
+      #tblMedidor_filter > div { width:100% !important; display:block !important; }
+      #tblMedidor_filter > div input { width:100% !important; min-width:0 !important; box-sizing:border-box; }
+    }
     @media (max-width:767px) {
       #tblMedidor_filter { gap:.3rem; }
     }
