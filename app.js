@@ -9,9 +9,7 @@ const crypto = require('crypto');
 const helmet = require('helmet');
 const hpp = require('hpp');
 const rateLimit = require('express-rate-limit');
-
-dotenv.config();
-
+dotenv.config()
 const app = express();
 const port = process.env.PORT || 3021;
 const host = process.env.HOST;

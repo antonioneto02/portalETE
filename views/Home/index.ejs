@@ -37,7 +37,6 @@
       .kpi-val  { font-size: 1.15rem; }
       .kpi-lbl  { font-size: .64rem; }
       .kpi-sub  { display: none; }
-      /* Mobile: mostra só Últ. dia + Última medição */
       .kpi-hide-mobile { display: none !important; }
       .kpi-mob-only    { display: flex !important; }
       .chart-wrap { height: 175px; }
@@ -53,14 +52,14 @@
       <div class="content">
 
         <%
-          const s = stats;
-          const l = s.latest;
-          function fv(v, dec) {
-            if (v == null) return '—';
-            return Number(v).toFixed(dec != null ? dec : 2);
+          const s  = stats;
+          const ud = s.ultimoDia;
+          function fv(v) {
+            if (v == null || v === 0) return '—';
+            return Number(v).toFixed(2);
           }
           function statusBg(v, min, max) {
-            if (v == null) return ['#64748b','#94a3b8'];
+            if (v == null || v === 0) return ['#64748b','#94a3b8'];
             if (min != null && max != null) {
               if (v >= min && v <= max) return ['#166534','#16a34a'];
               if (v < min * 0.85 || v > max * 1.15) return ['#991b1b','#b91c1c'];
@@ -69,51 +68,52 @@
             return ['#1e40af','#2B286F'];
           }
           const KPIS = [
-            { lbl:'pH',       unit:'',     v: l && l.pH,          min:6.5, max:9.5,  mob:false },
-            { lbl:'Turbidez', unit:'uT',   v: l && l.Turbidez,    min:0,   max:1.0,  mob:false },
-            { lbl:'Ferro',    unit:'mg/L', v: l && l.Ferro,       min:0,   max:0.3,  mob:false },
-            { lbl:'Cor',      unit:'uH',   v: l && l.Cor_Visual,  min:0,   max:15,   mob:false },
-            { lbl:'Cloro',    unit:'mg/L', v: l && l.Cloro,       min:0.2, max:5.0,  mob:false },
-            { lbl:'Alcalin.', unit:'mg/L', v: l && l.Alcalinidade,min:null,max:null, mob:false },
+            { lbl:'pH',          unit:'',     v: ud && ud.pH,          min:6.5,  max:9.5  },
+            { lbl:'Turbidez',    unit:'uT',   v: ud && ud.Turbidez,    min:0,    max:1.0  },
+            { lbl:'Ferro',       unit:'mg/L', v: ud && ud.Ferro,       min:0,    max:0.3  },
+            { lbl:'Cor',         unit:'uH',   v: ud && ud.Cor,         min:0,    max:15   },
+            { lbl:'Cloro',       unit:'mg/L', v: ud && ud.Cloro,       min:0.2,  max:5.0  },
+            { lbl:'Alcalinidade',unit:'mg/L', v: ud && ud.Alcalinidade,min:null, max:null },
+            { lbl:'Dureza',      unit:'mg/L', v: ud && ud.Dureza,      min:null, max:null },
           ];
         %>
-
-        <!-- KPIs -->
         <div class="kpi-grid">
-          <% KPIS.forEach(function(k) {
-            const bg = statusBg(k.v, k.min, k.max);
-          %>
-          <div class="kpi-card <%=k.mob?'':'kpi-hide-mobile'%>" style="background:linear-gradient(135deg,<%=bg[0]%>,<%=bg[1]%>);">
+          <% KPIS.forEach(function(k) { const bg = statusBg(k.v, k.min, k.max); %>
+          <div class="kpi-card kpi-hide-mobile" style="background:linear-gradient(135deg,<%=bg[0]%>,<%=bg[1]%>);">
             <div><span class="kpi-val"><%=fv(k.v)%></span><span class="kpi-unit"><%=k.unit%></span></div>
             <div class="kpi-lbl"><%=k.lbl%></div>
-            <% if (k.min != null) { %><div class="kpi-sub">Ref: <%=k.min%>–<%=k.max%></div><% } %>
+            <% if(k.min!=null){%><div class="kpi-sub">Ref: <%=k.min%>–<%=k.max%></div><%}%>
           </div>
           <% }); %>
-          <div class="kpi-card kpi-hide-mobile" style="background:linear-gradient(135deg,#1e40af,#2B286F);">
-            <div><span class="kpi-val"><%=s.totalUltimoDia%></span></div>
-            <div class="kpi-lbl">Últ. dia</div>
-            <div class="kpi-sub"><%=s.ultimoDia||'—'%></div>
-          </div>
-          <% if (s.conformidade) { %>
+          <% if(s.conformidade){%>
           <div class="kpi-card kpi-hide-mobile" style="background:linear-gradient(135deg,#065f46,#059669);">
-            <div><span class="kpi-val"><%=s.conformidade.ph_conf%></span><span class="kpi-unit">%</span></div>
-            <div class="kpi-lbl">pH OK</div>
-            <div class="kpi-sub">PORTARIA 888</div>
+            <div><span class="kpi-val"><%=s.conformidade.ph_conf||'—'%></span><span class="kpi-unit">%</span></div>
+            <div class="kpi-lbl">pH conf.</div>
+            <div class="kpi-sub">Portaria 888</div>
           </div>
-          <% } %>
-          <% if (l) { %>
-          <div class="kpi-card kpi-mob-only" style="background:linear-gradient(135deg,#334155,#64748b);">
-            <div class="kpi-lbl" style="opacity:.8;">Últ. medição</div>
-            <div style="font-size:1.1rem;font-weight:700;margin-top:4px;"><%=l.Data||'—'%></div>
+          <div class="kpi-card kpi-hide-mobile" style="background:linear-gradient(135deg,#0369a1,#0ea5e9);">
+            <div><span class="kpi-val"><%=s.conformidade.ferro_conf||'—'%></span><span class="kpi-unit">%</span></div>
+            <div class="kpi-lbl">Ferro conf.</div>
+            <div class="kpi-sub">≤ 0,3 mg/L</div>
           </div>
-          <% } %>
+          <%}%>
+          <% if(ud){%>
+          <div class="kpi-card kpi-hide-mobile" style="background:linear-gradient(135deg,#1e40af,#2B286F);">
+            <div><span class="kpi-val"><%=ud.qtd%></span></div>
+            <div class="kpi-lbl">Registros</div>
+            <div class="kpi-sub"><%=ud.Data%> · <%=ud.locais%> locais</div>
+          </div>
+          <div class="kpi-card kpi-mob-only" style="background:linear-gradient(135deg,<%=statusBg(ud.pH,6.5,9.5)[0]%>,<%=statusBg(ud.pH,6.5,9.5)[1]%>);">
+            <div class="kpi-lbl" style="opacity:.8;">pH médio</div>
+            <div style="font-size:1.15rem;font-weight:700;margin-top:4px;"><%=fv(ud.pH)%></div>
+          </div>
           <div class="kpi-card kpi-mob-only" style="background:linear-gradient(135deg,#1e40af,#2B286F);">
-            <div class="kpi-lbl" style="opacity:.8;">Últ. dia</div>
-            <div style="font-size:1.1rem;font-weight:700;margin-top:4px;"><%=s.totalUltimoDia%></div>
+            <div class="kpi-lbl" style="opacity:.8;">Últ. medição</div>
+            <div style="font-size:1rem;font-weight:700;margin-top:4px;"><%=ud.Data%></div>
+            <div style="font-size:.68rem;opacity:.75;"><%=ud.qtd%> registros · <%=ud.locais%> locais</div>
           </div>
+          <%}%>
         </div>
-
-        <!-- Row 1: Tendência + Distribuição turno -->
         <div class="row g-3 mb-3">
           <div class="col-12 col-lg-8">
             <div class="card chart-card">
@@ -128,8 +128,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Row 2: Registros por dia + Distribuição pH -->
         <div class="row g-3">
           <div class="col-12 col-sm-6 col-lg-6">
             <div class="card chart-card">
@@ -148,7 +146,6 @@
       </div>
     </div>
   </div>
-
   <script>
   (function () {
     const S = <%- statsJson %>;
@@ -168,7 +165,6 @@
       };
     }
 
-    /* Insere null nos gaps > 14 dias para não conectar períodos distantes */
     function breakGaps(arr, maxDays) {
       if (!arr || !arr.length) return arr;
       const out = [];
@@ -183,7 +179,6 @@
     }
     const trendData = breakGaps(S.trend, 14);
 
-    /* ─── 1. Linha: tendência pH + Turbidez ─── */
     if (trendData && trendData.length) {
       const labels = trendData.map(r => r.dia || '');
       new Chart(document.getElementById('chartTrend'), {
@@ -235,7 +230,6 @@
       });
     }
 
-    /* ─── 2. Rosca: por turno ─── */
     if (S.byTurno && S.byTurno.length) {
       new Chart(document.getElementById('chartTurno'), {
         type: 'doughnut',
@@ -261,7 +255,6 @@
       });
     }
 
-    /* ─── 3. Barras: registros por dia ─── */
     if (trendData && trendData.length) {
       new Chart(document.getElementById('chartRegistros'), {
         type: 'bar',
@@ -286,7 +279,6 @@
       });
     }
 
-    /* ─── 4. Barras: distribuição pH ─── */
     if (S.phDist && S.phDist.length) {
       const inRange = ['6,5–7,0','7,0–7,5','7,5–8,0','8,0–8,5','8,5–9,5'];
       new Chart(document.getElementById('chartPHDist'), {

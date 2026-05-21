@@ -56,9 +56,7 @@ async function cadastrarLancamento(req, res) {
     const pool = await getPool();
     const r = pool.request();
     const b = req.body;
-
     const toStr  = v => (v !== undefined && v !== '' && v !== null) ? String(v).trim() : null;
-    // Valores armazenados como inteiro sem separador decimal (7.32 → 732)
     const toInt  = v => (v !== undefined && v !== '' && v !== null) ? Math.round(parseFloat(v) * 100) : null;
     const toTurno = v => ({ 'Manhã': 1, 'Tarde': 2, 'Noite': 3 }[v] ?? null);
 
