@@ -515,6 +515,17 @@
     document.getElementById('fData').value = today;
     const modal = new bootstrap.Modal(document.getElementById('medidorModal'));
     const modalConfirma = new bootstrap.Modal(document.getElementById('modalConfirmaCancelar'));
+    document.getElementById('medidorModal').addEventListener('hide.bs.modal', () => {
+      if (document.activeElement && document.getElementById('medidorModal').contains(document.activeElement)) {
+        document.activeElement.blur();
+      }
+    });
+    document.getElementById('modalConfirmaCancelar').addEventListener('hide.bs.modal', () => {
+      if (document.activeElement && document.getElementById('modalConfirmaCancelar').contains(document.activeElement)) {
+        document.activeElement.blur();
+      }
+    });
+
     document.getElementById('btnCadastrar').addEventListener('click', () => modal.show());
     document.getElementById('btnCancelar').addEventListener('click', function() {
       const form = document.getElementById('formMedidor');
