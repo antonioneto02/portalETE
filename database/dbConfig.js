@@ -1,6 +1,6 @@
 const sql = require('mssql');
 const dotenv = require('dotenv');
-dotenv.config();
+dotenv.config({ override: true });
 
 const config = {
   user: process.env.DB_USER,

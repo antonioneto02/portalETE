@@ -1,7 +1,7 @@
 const axios = require('axios');
 const dotenv = require('dotenv');
 
-dotenv.config();
+dotenv.config({ override: true });
 
 const PROTHEUS_SERVER = process.env.PROTHEUS_SERVER;
 const TIMEOUT_MS = 120 * 60 * 1000;
