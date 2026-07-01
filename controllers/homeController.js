@@ -9,10 +9,16 @@ function adaptDiv(v) {
   return v;
 }
 
+// Registros antigos foram gravados com escala x100/x10 (bug já corrigido); esta heurística
+// só é aplicada a pH/Turbidez/Ferro/Cloro, cujo range real nunca atinge esses patamares.
 const sqlAdapt = col =>
   `CASE WHEN ${col}>=100 THEN ${col}/100.0 WHEN ${col}>=10 THEN ${col}/10.0 ELSE CAST(${col} AS FLOAT) END`;
 
 const sqlAvgNN = col => `AVG(NULLIF(${sqlAdapt(col)}, 0))`;
+
+// Alcalinidade/Dureza/Cor_Visual podem legitimamente ultrapassar 10/100 em leituras reais,
+// então usam o valor bruto (sem a heurística de escala).
+const sqlAvgRawNN = col => `AVG(NULLIF(CAST(${col} AS FLOAT), 0))`;
 
 async function renderHome(req, res) {
   let stats = {
@@ -33,10 +39,10 @@ async function renderHome(req, res) {
           ${sqlAvgNN('[pH]')}            AS pH,
           ${sqlAvgNN('[Turbidez]')}      AS Turbidez,
           ${sqlAvgNN('[Ferro]')}         AS Ferro,
-          ${sqlAvgNN('[Cor_Visual]')}    AS Cor,
+          ${sqlAvgRawNN('[Cor_Visual]')} AS Cor,
           ${sqlAvgNN('[Cloro]')}         AS Cloro,
-          ${sqlAvgNN('[Alcalinidade]')}  AS Alcalinidade,
-          ${sqlAvgNN('[Dureza]')}        AS Dureza
+          ${sqlAvgRawNN('[Alcalinidade]')} AS Alcalinidade,
+          ${sqlAvgRawNN('[Dureza]')}     AS Dureza
         FROM [dw].[dbo].[FATO_LANCAMENTO_ETA]
         WHERE CONVERT(DATE,[Data]) = (
           SELECT MAX(CONVERT(DATE,[Data]))
@@ -51,7 +57,7 @@ async function renderHome(req, res) {
           CONVERT(VARCHAR(10),[Data],23) AS dia,
           AVG(${sqlAdapt('[pH]')})       AS ph,
           ${sqlAvgNN('[Turbidez]')}      AS turbidez,
-          ${sqlAvgNN('[Cor_Visual]')}    AS cor,
+          ${sqlAvgRawNN('[Cor_Visual]')} AS cor,
           ${sqlAvgNN('[Ferro]')}         AS ferro,
           COUNT(*)                       AS registros
         FROM [dw].[dbo].[FATO_LANCAMENTO_ETA]

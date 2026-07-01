@@ -57,8 +57,8 @@ async function cadastrarLancamento(req, res) {
     const pool = await getPool();
     const r = pool.request();
     const b = req.body;
-    const toStr  = v => (v !== undefined && v !== '' && v !== null) ? String(v).trim() : null;
-    const toInt  = v => (v !== undefined && v !== '' && v !== null) ? Math.round(parseFloat(v) * 100) : null;
+    const toStr   = v => (v !== undefined && v !== '' && v !== null) ? String(v).trim() : null;
+    const toFloat = v => (v !== undefined && v !== '' && v !== null) ? parseFloat(v) : null;
     const toTurno = v => ({ 'Manhã': 1, 'Tarde': 2, 'Noite': 3 }[v] ?? null);
 
     r.input('Data',                    sql.Date,       b.Data || null);
@@ -71,14 +71,14 @@ async function cadastrarLancamento(req, res) {
     r.input('Deligado',                sql.VarChar(10),  toStr(b.Deligado));
     r.input('Ligado',                  sql.VarChar(10),  toStr(b.Ligado));
     r.input('Aspecto_Visual',          sql.VarChar(100), toStr(b.Aspecto_Visual));
-    r.input('Cor_Visual',              sql.Int,        toInt(b.Cor_Visual));
-    r.input('pH',                      sql.Int,        toInt(b.pH));
-    r.input('Cloro',                   sql.Int,        toInt(b.Cloro));
-    r.input('Alcalinidade',            sql.Int,        toInt(b.Alcalinidade));
-    r.input('Turbidez',                sql.Int,        toInt(b.Turbidez));
-    r.input('Ferro',                   sql.Int,        toInt(b.Ferro));
-    r.input('Dureza',                  sql.Int,        toInt(b.Dureza));
-    r.input('Condutividade',           sql.Int,        toInt(b.Condutividade));
+    r.input('Cor_Visual',              sql.Float,      toFloat(b.Cor_Visual));
+    r.input('pH',                      sql.Float,      toFloat(b.pH));
+    r.input('Cloro',                   sql.Float,      toFloat(b.Cloro));
+    r.input('Alcalinidade',            sql.Float,      toFloat(b.Alcalinidade));
+    r.input('Turbidez',                sql.Float,      toFloat(b.Turbidez));
+    r.input('Ferro',                   sql.Float,      toFloat(b.Ferro));
+    r.input('Dureza',                  sql.Float,      toFloat(b.Dureza));
+    r.input('Condutividade',           sql.Float,      toFloat(b.Condutividade));
     r.input('OBS',                     sql.VarChar(500), toStr(b.OBS));
 
     await r.query(`
