@@ -270,21 +270,14 @@
                     <th>Matrícula</th>
                     <th>Local</th>
                     <th>Aspecto</th>
-                    <th>Ap. Visual</th>
                     <th>Cor</th>
-                    <th>Ap. Cor</th>
                     <th>pH</th>
-                    <th>Ap. pH</th>
                     <th>Cloro</th>
-                    <th>Ap. Cloro</th>
                     <th>Turbidez</th>
-                    <th>Ap. Turbidez</th>
                     <th>Alcalinidade</th>
-                    <th>Ap. Alcalinidade</th>
                     <th>Ferro</th>
-                    <th>Ap. Ferro</th>
                     <th>Dureza</th>
-                    <th>Ap. Dureza</th>
+                    <th>Condutividade</th>
                     <th>Início</th>
                     <th>Fim</th>
                     <th>Ligado</th>
@@ -307,21 +300,14 @@
                     <td><%= l.matricula||'—' %></td>
                     <td><%= l.LOCAL||'—' %></td>
                     <td><%= l.Aspecto_Visual||'—' %></td>
-                    <td><%= l.Visual_Aparelho||'—' %></td>
                     <td class="<%= cls(l.Cor_Visual,0,15) %>"><%= fmt(l.Cor_Visual) %></td>
-                    <td><%= fmt(l.Cor_Aparelho) %></td>
                     <td class="<%= cls(l.pH,6.5,9.5) %>"><%= fmt(l.pH) %></td>
-                    <td><%= fmt(l.pH_Aparelho) %></td>
                     <td class="<%= cls(l.Cloro,0.2,5.0) %>"><%= fmt(l.Cloro) %></td>
-                    <td><%= fmt(l.Cloro_Aparelho) %></td>
                     <td class="<%= cls(l.Turbidez,0,1.0) %>"><%= fmt(l.Turbidez) %></td>
-                    <td><%= fmt(l.Turbidez_Aparelho) %></td>
                     <td><%= fmt(l.Alcalinidade) %></td>
-                    <td><%= fmt(l.Alcalinidade_Aparelho) %></td>
                     <td class="<%= cls(l.Ferro,0,0.3) %>"><%= fmt(l.Ferro) %></td>
-                    <td><%= fmt(l.Ferro_Aparelho) %></td>
                     <td><%= fmt(l.Dureza) %></td>
-                    <td><%= fmt(l.Dureza_Aparelho) %></td>
+                    <td><%= fmt(l.Condutividade) %></td>
                     <td><%= l.Inicial||'—' %></td>
                     <td><%= l.Final||'—' %></td>
                     <td><%= l.Ligado||'—' %></td>
@@ -388,17 +374,7 @@
                       <div class="mrc-item"><span class="mrc-lbl">Alcalinidade</span><span class="mrc-val"><%= fmt(l.Alcalinidade) %></span></div>
                       <div class="mrc-item"><span class="mrc-lbl">Ferro (mg/L)</span><span class="mrc-val"><%= fmt(l.Ferro) %></span></div>
                       <div class="mrc-item"><span class="mrc-lbl">Dureza</span><span class="mrc-val"><%= fmt(l.Dureza) %></span></div>
-                    </div>
-                    <div class="mrc-subhead">Leitura dos Aparelhos</div>
-                    <div class="mrc-grid">
-                      <div class="mrc-item"><span class="mrc-lbl">Aparelho Aspecto</span><span class="mrc-val"><%= l.Visual_Aparelho||'—' %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Cor Ap.</span><span class="mrc-val"><%= fmt(l.Cor_Aparelho) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">pH Ap.</span><span class="mrc-val"><%= fmt(l.pH_Aparelho) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Cloro Ap.</span><span class="mrc-val"><%= fmt(l.Cloro_Aparelho) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Turbidez Ap.</span><span class="mrc-val"><%= fmt(l.Turbidez_Aparelho) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Alcalinidade Ap.</span><span class="mrc-val"><%= fmt(l.Alcalinidade_Aparelho) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Ferro Ap.</span><span class="mrc-val"><%= fmt(l.Ferro_Aparelho) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Dureza Ap.</span><span class="mrc-val"><%= fmt(l.Dureza_Aparelho) %></span></div>
+                      <div class="mrc-item"><span class="mrc-lbl">Condutividade</span><span class="mrc-val"><%= fmt(l.Condutividade) %></span></div>
                     </div>
                     <div class="mrc-subhead">Horários</div>
                     <div class="mrc-grid">
@@ -554,42 +530,9 @@
                   <label for="fDureza">Dureza <span style="color:#9ca3af;font-weight:400">(mg/L)</span></label>
                   <input type="number" step="0.01" min="0" class="form-control" id="fDureza" name="Dureza" placeholder="0.00">
                 </div>
-              </div>
-            </div>
-            <div class="form-section">
-              <div class="form-section-title"><i class="bi bi-rulers"></i>Leitura dos Aparelhos</div>
-              <div class="row g-2">
-                <div class="col-6 col-md-3 param-pair">
-                  <label for="fVisualAp">Aparelho Aspecto</label>
-                  <input type="text" class="form-control" id="fVisualAp" name="Visual_Aparelho" placeholder="Modelo/ID">
-                </div>
-                <div class="col-6 col-md-3 param-pair">
-                  <label for="fCorAp">Aparelho Cor <span style="color:#9ca3af;font-weight:400">(uH)</span></label>
-                  <input type="number" step="0.01" min="0" class="form-control" id="fCorAp" name="Cor_Aparelho" placeholder="0.00">
-                </div>
-                <div class="col-6 col-md-3 param-pair">
-                  <label for="fpHAp">Aparelho pH</label>
-                  <input type="number" step="0.01" min="0" max="14" class="form-control" id="fpHAp" name="pH_Aparelho" placeholder="7.00">
-                </div>
-                <div class="col-6 col-md-3 param-pair">
-                  <label for="fCloroAp">Aparelho Cloro <span style="color:#9ca3af;font-weight:400">(mg/L)</span></label>
-                  <input type="number" step="0.01" min="0" class="form-control" id="fCloroAp" name="Cloro_Aparelho" placeholder="0.20">
-                </div>
-                <div class="col-6 col-md-3 param-pair">
-                  <label for="fTurbAp">Aparelho Turbidez <span style="color:#9ca3af;font-weight:400">(uT)</span></label>
-                  <input type="number" step="0.01" min="0" class="form-control" id="fTurbAp" name="Turbidez_Aparelho" placeholder="0.00">
-                </div>
-                <div class="col-6 col-md-3 param-pair">
-                  <label for="fAlcAp">Aparelho Alcalinidade</label>
-                  <input type="number" step="0.01" min="0" class="form-control" id="fAlcAp" name="Alcalinidade_Aparelho" placeholder="0.00">
-                </div>
-                <div class="col-6 col-md-3 param-pair">
-                  <label for="fFerroAp">Aparelho Ferro <span style="color:#9ca3af;font-weight:400">(mg/L)</span></label>
-                  <input type="number" step="0.001" min="0" class="form-control" id="fFerroAp" name="Ferro_Aparelho" placeholder="0.000">
-                </div>
-                <div class="col-6 col-md-3 param-pair">
-                  <label for="fDurezaAp">Aparelho Dureza <span style="color:#9ca3af;font-weight:400">(mg/L)</span></label>
-                  <input type="number" step="0.01" min="0" class="form-control" id="fDurezaAp" name="Dureza_Aparelho" placeholder="0.00">
+                <div class="col-6 col-md-4 param-pair">
+                  <label for="fCondutividade">Condutividade <span style="color:#9ca3af;font-weight:400">(µS/cm)</span></label>
+                  <input type="number" step="0.01" min="0" class="form-control" id="fCondutividade" name="Condutividade" placeholder="0.00">
                 </div>
               </div>
             </div>

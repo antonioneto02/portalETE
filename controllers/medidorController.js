@@ -9,14 +9,15 @@ async function renderMedidor(req, res) {
       SELECT TOP 500
         [Data], [turno], [matricula], [Operador], [LOCAL],
         [Inicial], [Final], [Deligado], [Ligado],
-        [Aspecto_Visual], [Visual_Aparelho],
-        [Cor_Visual], [Cor_Aparelho],
-        [pH], [pH_Aparelho],
-        [Cloro], [Cloro_Aparelho],
-        [Alcalinidade], [Alcalinidade_Aparelho],
-        [Turbidez], [Turbidez_Aparelho],
-        [Ferro], [Ferro_Aparelho],
-        [Dureza], [Dureza_Aparelho],
+        [Aspecto_Visual],
+        [Cor_Visual],
+        [pH],
+        [Cloro],
+        [Alcalinidade],
+        [Turbidez],
+        [Ferro],
+        [Dureza],
+        [Condutividade],
         [OBS]
       FROM [dw].[dbo].[FATO_LANCAMENTO_ETA]
       ORDER BY [Data] DESC
@@ -70,40 +71,33 @@ async function cadastrarLancamento(req, res) {
     r.input('Deligado',                sql.VarChar(10),  toStr(b.Deligado));
     r.input('Ligado',                  sql.VarChar(10),  toStr(b.Ligado));
     r.input('Aspecto_Visual',          sql.VarChar(100), toStr(b.Aspecto_Visual));
-    r.input('Visual_Aparelho',         sql.VarChar(100), toStr(b.Visual_Aparelho));
     r.input('Cor_Visual',              sql.Int,        toInt(b.Cor_Visual));
-    r.input('Cor_Aparelho',            sql.Int,        toInt(b.Cor_Aparelho));
     r.input('pH',                      sql.Int,        toInt(b.pH));
-    r.input('pH_Aparelho',             sql.Int,        toInt(b.pH_Aparelho));
     r.input('Cloro',                   sql.Int,        toInt(b.Cloro));
-    r.input('Cloro_Aparelho',          sql.Int,        toInt(b.Cloro_Aparelho));
     r.input('Alcalinidade',            sql.Int,        toInt(b.Alcalinidade));
-    r.input('Alcalinidade_Aparelho',   sql.Int,        toInt(b.Alcalinidade_Aparelho));
     r.input('Turbidez',                sql.Int,        toInt(b.Turbidez));
-    r.input('Turbidez_Aparelho',       sql.Int,        toInt(b.Turbidez_Aparelho));
     r.input('Ferro',                   sql.Int,        toInt(b.Ferro));
-    r.input('Ferro_Aparelho',          sql.Int,        toInt(b.Ferro_Aparelho));
     r.input('Dureza',                  sql.Int,        toInt(b.Dureza));
-    r.input('Dureza_Aparelho',         sql.Int,        toInt(b.Dureza_Aparelho));
+    r.input('Condutividade',           sql.Int,        toInt(b.Condutividade));
     r.input('OBS',                     sql.VarChar(500), toStr(b.OBS));
 
     await r.query(`
       INSERT INTO [dw].[dbo].[FATO_LANCAMENTO_ETA]
         ([Data],[turno],[matricula],[Operador],[LOCAL],
          [Inicial],[Final],[Deligado],[Ligado],
-         [Aspecto_Visual],[Visual_Aparelho],[Cor_Visual],[Cor_Aparelho],
-         [pH],[pH_Aparelho],[Cloro],[Cloro_Aparelho],
-         [Alcalinidade],[Alcalinidade_Aparelho],
-         [Turbidez],[Turbidez_Aparelho],
-         [Ferro],[Ferro_Aparelho],[Dureza],[Dureza_Aparelho],[OBS])
+         [Aspecto_Visual],[Cor_Visual],
+         [pH],[Cloro],
+         [Alcalinidade],
+         [Turbidez],
+         [Ferro],[Dureza],[Condutividade],[OBS])
       VALUES
         (@Data,@turno,@matricula,@Operador,@LOCAL,
          @Inicial,@Final,@Deligado,@Ligado,
-         @Aspecto_Visual,@Visual_Aparelho,@Cor_Visual,@Cor_Aparelho,
-         @pH,@pH_Aparelho,@Cloro,@Cloro_Aparelho,
-         @Alcalinidade,@Alcalinidade_Aparelho,
-         @Turbidez,@Turbidez_Aparelho,
-         @Ferro,@Ferro_Aparelho,@Dureza,@Dureza_Aparelho,@OBS)
+         @Aspecto_Visual,@Cor_Visual,
+         @pH,@Cloro,
+         @Alcalinidade,
+         @Turbidez,
+         @Ferro,@Dureza,@Condutividade,@OBS)
     `);
 
     const newCsrf = generateCsrfToken(req);
