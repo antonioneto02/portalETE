@@ -59,7 +59,11 @@
           const ud = s.ultimoDia;
           function fv(v) {
             if (v == null || v === 0) return '—';
-            return Number(v).toFixed(2);
+            return Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+          }
+          function fvPct(v) {
+            if (v == null || v === '') return '—';
+            return Number(v).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1});
           }
           function statusBg(v, min, max) {
             if (v == null || v === 0) return ['#64748b','#94a3b8'];
@@ -90,12 +94,12 @@
           <% }); %>
           <% if(s.conformidade){%>
           <div class="kpi-card kpi-hide-mobile" style="background:linear-gradient(135deg,#065f46,#059669);">
-            <div><span class="kpi-val"><%=s.conformidade.ph_conf||'—'%></span><span class="kpi-unit">%</span></div>
+            <div><span class="kpi-val"><%=fvPct(s.conformidade.ph_conf)%></span><span class="kpi-unit">%</span></div>
             <div class="kpi-lbl">pH conf.</div>
             <div class="kpi-sub">Portaria 888</div>
           </div>
           <div class="kpi-card kpi-hide-mobile" style="background:linear-gradient(135deg,#0369a1,#0ea5e9);">
-            <div><span class="kpi-val"><%=s.conformidade.ferro_conf||'—'%></span><span class="kpi-unit">%</span></div>
+            <div><span class="kpi-val"><%=fvPct(s.conformidade.ferro_conf)%></span><span class="kpi-unit">%</span></div>
             <div class="kpi-lbl">Ferro conf.</div>
             <div class="kpi-sub">≤ 0,3 mg/L</div>
           </div>

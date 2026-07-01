@@ -237,7 +237,7 @@
                 if(n>=10)  return n/10;
                 return n;
               }
-              function fmt(v) { const n=adapt(v); return n==null?'—':n.toFixed(2); }
+              function fmt(v) { const n=adapt(v); return n==null?'—':n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
               function fmtDate(d) {
                 if(!d) return '—';
                 try { return new Date(d).toLocaleDateString('pt-BR'); } catch(e){ return String(d).substring(0,10); }
@@ -499,7 +499,7 @@
                 </div>
                 <div class="col-6 col-md-4 param-pair">
                   <label for="fCorVis">Cor visual <span style="color:#9ca3af;font-weight:400">(uH)</span></label>
-                  <input type="number" step="0.01" min="0" class="form-control" id="fCorVis" name="Cor_Visual" placeholder="0.00">
+                  <input type="text" inputmode="decimal" class="form-control input-decimal" id="fCorVis" name="Cor_Visual" data-decimals="2" placeholder="0,00">
                 </div>
               </div>
             </div>
@@ -508,31 +508,31 @@
               <div class="row g-2">
                 <div class="col-6 col-md-4 param-pair">
                   <label for="fpH">pH <span style="color:#9ca3af;font-weight:400">(6,5–9,5)</span></label>
-                  <input type="number" step="0.01" min="0" max="14" class="form-control" id="fpH" name="pH" placeholder="7.00">
+                  <input type="text" inputmode="decimal" class="form-control input-decimal" id="fpH" name="pH" data-decimals="2" placeholder="7,00">
                 </div>
                 <div class="col-6 col-md-4 param-pair">
                   <label for="fCloro">Cloro <span style="color:#9ca3af;font-weight:400">(mg/L)</span></label>
-                  <input type="number" step="0.01" min="0" class="form-control" id="fCloro" name="Cloro" placeholder="0.20">
+                  <input type="text" inputmode="decimal" class="form-control input-decimal" id="fCloro" name="Cloro" data-decimals="2" placeholder="0,20">
                 </div>
                 <div class="col-6 col-md-4 param-pair">
                   <label for="fTurb">Turbidez <span style="color:#9ca3af;font-weight:400">(uT)</span></label>
-                  <input type="number" step="0.01" min="0" class="form-control" id="fTurb" name="Turbidez" placeholder="0.00">
+                  <input type="text" inputmode="decimal" class="form-control input-decimal" id="fTurb" name="Turbidez" data-decimals="2" placeholder="0,00">
                 </div>
                 <div class="col-6 col-md-4 param-pair">
                   <label for="fAlc">Alcalinidade <span style="color:#9ca3af;font-weight:400">(mg/L)</span></label>
-                  <input type="number" step="0.01" min="0" class="form-control" id="fAlc" name="Alcalinidade" placeholder="0.00">
+                  <input type="text" inputmode="decimal" class="form-control input-decimal" id="fAlc" name="Alcalinidade" data-decimals="2" placeholder="0,00">
                 </div>
                 <div class="col-6 col-md-4 param-pair">
                   <label for="fFerro">Ferro <span style="color:#9ca3af;font-weight:400">(mg/L)</span></label>
-                  <input type="number" step="0.001" min="0" class="form-control" id="fFerro" name="Ferro" placeholder="0.000">
+                  <input type="text" inputmode="decimal" class="form-control input-decimal" id="fFerro" name="Ferro" data-decimals="3" placeholder="0,000">
                 </div>
                 <div class="col-6 col-md-4 param-pair">
                   <label for="fDureza">Dureza <span style="color:#9ca3af;font-weight:400">(mg/L)</span></label>
-                  <input type="number" step="0.01" min="0" class="form-control" id="fDureza" name="Dureza" placeholder="0.00">
+                  <input type="text" inputmode="decimal" class="form-control input-decimal" id="fDureza" name="Dureza" data-decimals="2" placeholder="0,00">
                 </div>
                 <div class="col-6 col-md-4 param-pair">
                   <label for="fCondutividade">Condutividade <span style="color:#9ca3af;font-weight:400">(µS/cm)</span></label>
-                  <input type="number" step="0.01" min="0" class="form-control" id="fCondutividade" name="Condutividade" placeholder="0.00">
+                  <input type="text" inputmode="decimal" class="form-control input-decimal" id="fCondutividade" name="Condutividade" data-decimals="2" placeholder="0,00">
                 </div>
               </div>
             </div>
@@ -582,8 +582,25 @@
   </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+  function maskDecimalInput(el) {
+    const decimals = parseInt(el.dataset.decimals || '2', 10);
+    el.addEventListener('input', function () {
+      let digits = el.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+      if (!digits) { el.value = ''; return; }
+      while (digits.length <= decimals) digits = '0' + digits;
+      const intPart = digits.slice(0, digits.length - decimals).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      const decPart = digits.slice(digits.length - decimals);
+      el.value = intPart + ',' + decPart;
+    });
+  }
+  function decimalToFloatStr(v) {
+    if (!v) return '';
+    return v.replace(/\./g, '').replace(',', '.');
+  }
+
   $(document).ready(function () {
     var isMobile = window.innerWidth <= 767;
+    document.querySelectorAll('.input-decimal').forEach(maskDecimalInput);
     $('#tblMedidor').DataTable({
       language: {
         url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/pt-BR.json'
@@ -738,6 +755,9 @@
 
       const body = {};
       new FormData(form).forEach((v, k) => { body[k] = v; });
+      document.querySelectorAll('.input-decimal').forEach(el => {
+        body[el.name] = decimalToFloatStr(body[el.name]);
+      });
 
       try {
         const resp = await fetch('/medidor/cadastrar', {
