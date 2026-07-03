@@ -21,7 +21,7 @@ async function renderMedidor(req, res) {
         [Condutividade],
         [OBS]
       FROM [dw].[dbo].[FATO_LANCAMENTO_ETA]
-      ORDER BY [Data] DESC
+      ORDER BY [Data] DESC, [ID] DESC
     `);
     const csrfToken = generateCsrfToken(req);
     res.render('Medidor/index', {

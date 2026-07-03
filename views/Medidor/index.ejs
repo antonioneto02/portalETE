@@ -251,7 +251,12 @@
               function fmtRaw(v) { return fmtNum(raw(v)); }
               function fmtDate(d) {
                 if(!d) return '—';
-                try { return new Date(d).toLocaleDateString('pt-BR'); } catch(e){ return String(d).substring(0,10); }
+                try {
+                  const dt = new Date(d);
+                  const day   = String(dt.getUTCDate()).padStart(2,'0');
+                  const month = String(dt.getUTCMonth()+1).padStart(2,'0');
+                  return day + '/' + month + '/' + dt.getUTCFullYear();
+                } catch(e){ return String(d).substring(0,10); }
               }
               function fmtDateTime(d) {
                 if(!d) return '—';
@@ -308,7 +313,7 @@
                 <tbody>
                 <% lancamentos.forEach(function(l) { %>
                   <tr data-id="<%= l.ID %>">
-                    <td><%= fmtDate(l.Data) %></td>
+                    <td data-order="<%= l.Data ? new Date(l.Data).getTime() : 0 %>"><%= fmtDate(l.Data) %></td>
                     <td>
                       <% if(l.turno) { %>
                         <span class="badge-turno" style="background:<%= l.turno===1?'#16a34a':l.turno===2?'#d97706':'#2B286F' %>;color:white;">
@@ -503,7 +508,7 @@
                   <input type="number" class="form-control" id="fInicial" name="Inicial" placeholder="0">
                 </div>
                 <div class="col-6 col-md-2 param-pair" id="gapAcumuloWrap" style="display:none;">
-                  <label for="fGapAcumulo">Gap última leitura</label>
+                  <label for="fGapAcumulo">Gap</label>
                   <input type="text" class="form-control" id="fGapAcumulo" readonly
                     style="background:#f3f4f6;cursor:not-allowed;color:#6b7280;">
                 </div>
@@ -802,20 +807,17 @@
         wrap.style.display = 'none';
         return;
       }
+      const leituraStr = document.getElementById('fInicial').value;
+      const leitura = leituraStr !== '' ? parseInt(leituraStr, 10) : null;
       const last = findLastAcumuloReading(document.getElementById('fId').value);
-      if (!last) {
+      if (!last || leitura == null || isNaN(leitura)) {
         wrap.style.display = 'none';
         return;
       }
       wrap.style.display = '';
-      const leituraStr = document.getElementById('fInicial').value;
-      const leitura = leituraStr !== '' ? parseInt(leituraStr, 10) : null;
       const fGap = document.getElementById('fGapAcumulo');
-      if (leitura == null || isNaN(leitura)) {
-        fGap.value = 'Anterior: ' + last.Inicial;
-      } else {
-        fGap.value = (leitura - last.Inicial) + ' (ant.: ' + last.Inicial + ')';
-      }
+      fGap.value = leitura - last.Inicial;
+      fGap.title = 'Leitura anterior: ' + last.Inicial;
     }
 
     function updateDescansoReadonly() {
