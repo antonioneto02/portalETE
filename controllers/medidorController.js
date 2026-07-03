@@ -7,8 +7,9 @@ async function renderMedidor(req, res) {
     const pool = await getPool();
     const result = await pool.request().query(`
       SELECT TOP 500
+        [ID],
         [Data], [turno], [matricula], [Operador], [LOCAL],
-        [Inicial], [Final], [Deligado], [Ligado],
+        [Inicial], [Inicio_Descanso], [Fim_Descanso], [Desligado], [Ligado],
         [Aspecto_Visual],
         [Cor_Visual],
         [pH],
@@ -57,18 +58,21 @@ async function cadastrarLancamento(req, res) {
     const pool = await getPool();
     const r = pool.request();
     const b = req.body;
-    const toStr   = v => (v !== undefined && v !== '' && v !== null) ? String(v).trim() : null;
-    const toFloat = v => (v !== undefined && v !== '' && v !== null) ? parseFloat(v) : null;
-    const toTurno = v => ({ 'Manhã': 1, 'Tarde': 2, 'Noite': 3 }[v] ?? null);
+    const toStr      = v => (v !== undefined && v !== '' && v !== null) ? String(v).trim() : null;
+    const toFloat    = v => (v !== undefined && v !== '' && v !== null) ? parseFloat(v) : null;
+    const toInt      = v => (v !== undefined && v !== '' && v !== null) ? parseInt(v, 10) : null;
+    const toDateTime = v => (v !== undefined && v !== '' && v !== null) ? new Date(v) : null;
+    const toTurno    = v => ({ 'Manhã': 1, 'Tarde': 2, 'Noite': 3 }[v] ?? null);
 
     r.input('Data',                    sql.Date,       b.Data || null);
     r.input('turno',                   sql.Int,        toTurno(b.turno));
     r.input('matricula',               sql.VarChar(50),  toStr(b.matricula));
     r.input('Operador',                sql.VarChar(100), toStr(b.Operador));
     r.input('LOCAL',                   sql.VarChar(100), toStr(b.LOCAL));
-    r.input('Inicial',                 sql.VarChar(10),  toStr(b.Inicial));
-    r.input('Final',                   sql.VarChar(10),  toStr(b.Final));
-    r.input('Deligado',                sql.VarChar(10),  toStr(b.Deligado));
+    r.input('Inicial',                 sql.Int,          toInt(b.Inicial));
+    r.input('Inicio_Descanso',         sql.DateTime2,    toDateTime(b.Inicio_Descanso));
+    r.input('Fim_Descanso',            sql.DateTime2,    toDateTime(b.Fim_Descanso));
+    r.input('Desligado',               sql.VarChar(10),  toStr(b.Desligado));
     r.input('Ligado',                  sql.VarChar(10),  toStr(b.Ligado));
     r.input('Aspecto_Visual',          sql.VarChar(100), toStr(b.Aspecto_Visual));
     r.input('Cor_Visual',              sql.Float,      toFloat(b.Cor_Visual));
@@ -84,7 +88,7 @@ async function cadastrarLancamento(req, res) {
     await r.query(`
       INSERT INTO [dw].[dbo].[FATO_LANCAMENTO_ETA]
         ([Data],[turno],[matricula],[Operador],[LOCAL],
-         [Inicial],[Final],[Deligado],[Ligado],
+         [Inicial],[Inicio_Descanso],[Fim_Descanso],[Desligado],[Ligado],
          [Aspecto_Visual],[Cor_Visual],
          [pH],[Cloro],
          [Alcalinidade],
@@ -92,7 +96,7 @@ async function cadastrarLancamento(req, res) {
          [Ferro],[Dureza],[Condutividade],[OBS])
       VALUES
         (@Data,@turno,@matricula,@Operador,@LOCAL,
-         @Inicial,@Final,@Deligado,@Ligado,
+         @Inicial,@Inicio_Descanso,@Fim_Descanso,@Desligado,@Ligado,
          @Aspecto_Visual,@Cor_Visual,
          @pH,@Cloro,
          @Alcalinidade,
@@ -105,6 +109,85 @@ async function cadastrarLancamento(req, res) {
   } catch (err) {
     console.error('[Medidor] Erro ao cadastrar:', err);
     res.status(500).json({ success: false, error: 'Erro ao salvar o lançamento.' });
+  }
+}
+
+async function atualizarLancamento(req, res) {
+  const sessionToken = String(req.session?.csrfToken || '');
+  const bodyToken    = String(req.body?._csrf || '');
+  if (!sessionToken || !bodyToken || sessionToken !== bodyToken) {
+    return res.status(403).json({ success: false, error: 'Token de segurança inválido. Recarregue a página.' });
+  }
+  req.session.csrfToken = null;
+
+  const id = parseInt(req.params.id, 10);
+  if (!Number.isInteger(id)) {
+    return res.status(400).json({ success: false, error: 'Identificador do lançamento inválido.' });
+  }
+
+  try {
+    const pool = await getPool();
+    const r = pool.request();
+    const b = req.body;
+    const toStr      = v => (v !== undefined && v !== '' && v !== null) ? String(v).trim() : null;
+    const toFloat    = v => (v !== undefined && v !== '' && v !== null) ? parseFloat(v) : null;
+    const toInt      = v => (v !== undefined && v !== '' && v !== null) ? parseInt(v, 10) : null;
+    const toDateTime = v => (v !== undefined && v !== '' && v !== null) ? new Date(v) : null;
+    const toTurno    = v => ({ 'Manhã': 1, 'Tarde': 2, 'Noite': 3 }[v] ?? null);
+
+    r.input('ID',                      sql.Int,        id);
+    r.input('Data',                    sql.Date,       b.Data || null);
+    r.input('turno',                   sql.Int,        toTurno(b.turno));
+    r.input('matricula',               sql.VarChar(50),  toStr(b.matricula));
+    r.input('Operador',                sql.VarChar(100), toStr(b.Operador));
+    r.input('LOCAL',                   sql.VarChar(100), toStr(b.LOCAL));
+    r.input('Inicial',                 sql.Int,          toInt(b.Inicial));
+    r.input('Inicio_Descanso',         sql.DateTime2,    toDateTime(b.Inicio_Descanso));
+    r.input('Fim_Descanso',            sql.DateTime2,    toDateTime(b.Fim_Descanso));
+    r.input('Desligado',               sql.VarChar(10),  toStr(b.Desligado));
+    r.input('Ligado',                  sql.VarChar(10),  toStr(b.Ligado));
+    r.input('Aspecto_Visual',          sql.VarChar(100), toStr(b.Aspecto_Visual));
+    r.input('Cor_Visual',              sql.Float,      toFloat(b.Cor_Visual));
+    r.input('pH',                      sql.Float,      toFloat(b.pH));
+    r.input('Cloro',                   sql.Float,      toFloat(b.Cloro));
+    r.input('Alcalinidade',            sql.Float,      toFloat(b.Alcalinidade));
+    r.input('Turbidez',                sql.Float,      toFloat(b.Turbidez));
+    r.input('Ferro',                   sql.Float,      toFloat(b.Ferro));
+    r.input('Dureza',                  sql.Float,      toFloat(b.Dureza));
+    r.input('Condutividade',           sql.Float,      toFloat(b.Condutividade));
+    r.input('OBS',                     sql.VarChar(500), toStr(b.OBS));
+
+    await r.query(`
+      UPDATE [dw].[dbo].[FATO_LANCAMENTO_ETA]
+      SET
+        [Data] = @Data,
+        [turno] = @turno,
+        [matricula] = @matricula,
+        [Operador] = @Operador,
+        [LOCAL] = @LOCAL,
+        [Inicial] = @Inicial,
+        [Inicio_Descanso] = @Inicio_Descanso,
+        [Fim_Descanso] = @Fim_Descanso,
+        [Desligado] = @Desligado,
+        [Ligado] = @Ligado,
+        [Aspecto_Visual] = @Aspecto_Visual,
+        [Cor_Visual] = @Cor_Visual,
+        [pH] = @pH,
+        [Cloro] = @Cloro,
+        [Alcalinidade] = @Alcalinidade,
+        [Turbidez] = @Turbidez,
+        [Ferro] = @Ferro,
+        [Dureza] = @Dureza,
+        [Condutividade] = @Condutividade,
+        [OBS] = @OBS
+      WHERE [ID] = @ID
+    `);
+
+    const newCsrf = generateCsrfToken(req);
+    res.json({ success: true, csrfToken: newCsrf });
+  } catch (err) {
+    console.error('[Medidor] Erro ao atualizar:', err);
+    res.status(500).json({ success: false, error: 'Erro ao atualizar o lançamento.' });
   }
 }
 
@@ -175,4 +258,4 @@ async function getOperadores(req, res) {
   }
 }
 
-module.exports = { renderMedidor, cadastrarLancamento, getHomeStats, getOperadores };
+module.exports = { renderMedidor, cadastrarLancamento, atualizarLancamento, getHomeStats, getOperadores };

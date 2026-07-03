@@ -253,6 +253,14 @@
                 if(!d) return '—';
                 try { return new Date(d).toLocaleDateString('pt-BR'); } catch(e){ return String(d).substring(0,10); }
               }
+              function fmtDateTime(d) {
+                if(!d) return '—';
+                try {
+                  const dt = new Date(d);
+                  return dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+                } catch(e){ return String(d); }
+              }
+              function fmtInt(v) { return (v==null||v==='') ? '—' : v; }
               function turnoLabel(t) { return t===1?'Manhã':t===2?'Tarde':t===3?'Noite':t||'—'; }
               function cls(v, min, max) {
                 if(v==null) return '';
@@ -289,15 +297,17 @@
                     <th>Dureza</th>
                     <th>Condutividade</th>
                     <th>Início</th>
-                    <th>Fim</th>
+                    <th>Início Descanso</th>
+                    <th>Fim Descanso</th>
                     <th>Ligado</th>
                     <th>Desligado</th>
                     <th>OBS</th>
+                    <th class="no-export">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                 <% lancamentos.forEach(function(l) { %>
-                  <tr>
+                  <tr data-id="<%= l.ID %>">
                     <td><%= fmtDate(l.Data) %></td>
                     <td>
                       <% if(l.turno) { %>
@@ -318,11 +328,17 @@
                     <td class="<%= cls(adaptLegacy(l.Ferro),0,0.3) %>"><%= fmt(l.Ferro) %></td>
                     <td><%= fmtRaw(l.Dureza) %></td>
                     <td><%= fmtRaw(l.Condutividade) %></td>
-                    <td><%= l.Inicial||'—' %></td>
-                    <td><%= l.Final||'—' %></td>
+                    <td><%= fmtInt(l.Inicial) %></td>
+                    <td><%= fmtDateTime(l.Inicio_Descanso) %></td>
+                    <td><%= fmtDateTime(l.Fim_Descanso) %></td>
                     <td><%= l.Ligado||'—' %></td>
-                    <td><%= l.Deligado||'—' %></td>
+                    <td><%= l.Desligado||'—' %></td>
                     <td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><%= l.OBS||'—' %></td>
+                    <td class="no-export">
+                      <button type="button" class="btn btn-sm btn-outline-secondary btn-edit-lancamento" data-id="<%= l.ID %>" title="Editar">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                    </td>
                   </tr>
                 <% }); %>
                 </tbody>
@@ -361,7 +377,7 @@
                 const statusLabel = { bad:'Alerta', warn:'Atenção', ok:'Conforme', none:'—' }[status];
                 const statusChipCls = { bad:'val-bad', warn:'val-warn', ok:'val-ok', none:'val-none' }[status];
               %>
-                <div class="mobile-reg-card status-<%= status %>" data-search="<%= searchStr %>" data-status="<%= status %>">
+                <div class="mobile-reg-card status-<%= status %>" data-search="<%= searchStr %>" data-status="<%= status %>" data-id="<%= l.ID %>">
                   <div class="mrc-row">
                     <div class="mrc-icon"><i class="bi bi-droplet-half"></i></div>
                     <div class="mrc-main">
@@ -388,14 +404,20 @@
                     </div>
                     <div class="mrc-subhead">Horários</div>
                     <div class="mrc-grid">
-                      <div class="mrc-item"><span class="mrc-lbl">Início</span><span class="mrc-val"><%= l.Inicial||'—' %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Fim</span><span class="mrc-val"><%= l.Final||'—' %></span></div>
+                      <div class="mrc-item"><span class="mrc-lbl">Início</span><span class="mrc-val"><%= fmtInt(l.Inicial) %></span></div>
+                      <div class="mrc-item"><span class="mrc-lbl">Início Descanso</span><span class="mrc-val"><%= fmtDateTime(l.Inicio_Descanso) %></span></div>
+                      <div class="mrc-item"><span class="mrc-lbl">Fim Descanso</span><span class="mrc-val"><%= fmtDateTime(l.Fim_Descanso) %></span></div>
                       <div class="mrc-item"><span class="mrc-lbl">Ligado</span><span class="mrc-val"><%= l.Ligado||'—' %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Desligado</span><span class="mrc-val"><%= l.Deligado||'—' %></span></div>
+                      <div class="mrc-item"><span class="mrc-lbl">Desligado</span><span class="mrc-val"><%= l.Desligado||'—' %></span></div>
                     </div>
                     <% if (l.OBS) { %>
                       <div class="mrc-obs"><i class="bi bi-chat-left-text me-1"></i><%= l.OBS %></div>
                     <% } %>
+                    <div style="margin-top:10px;">
+                      <button type="button" class="btn btn-sm btn-outline-secondary btn-edit-lancamento" data-id="<%= l.ID %>" style="width:100%;">
+                        <i class="bi bi-pencil me-1"></i>Editar
+                      </button>
+                    </div>
                   </div>
                 </div>
               <% }); %>
@@ -418,12 +440,13 @@
     <div class="modal-dialog modal-lg modal-fullscreen-md-down">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Novo Lançamento ETA</h5>
+          <h5 class="modal-title" id="medidorModalTitle"><i class="bi bi-plus-circle me-2"></i>Novo Lançamento ETA</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
           <form id="formMedidor" novalidate>
             <input type="hidden" name="_csrf" id="csrfInput" value="<%= csrfToken %>">
+            <input type="hidden" name="ID" id="fId" value="">
             <div class="form-section">
               <div class="form-section-title"><i class="bi bi-person-badge"></i>Identificação</div>
               <div class="row g-2">
@@ -476,20 +499,29 @@
                   </select>
                 </div>
                 <div class="col-6 col-md-2 param-pair">
-                  <label for="fInicial">Início</label>
-                  <input type="time" class="form-control" id="fInicial" name="Inicial">
+                  <label for="fInicial">Leitura</label>
+                  <input type="number" class="form-control" id="fInicial" name="Inicial" placeholder="0">
                 </div>
-                <div class="col-6 col-md-2 param-pair">
-                  <label for="fFinal">Fim</label>
-                  <input type="time" class="form-control" id="fFinal" name="Final">
+                <div class="col-6 col-md-2 param-pair" id="gapAcumuloWrap" style="display:none;">
+                  <label for="fGapAcumulo">Gap última leitura</label>
+                  <input type="text" class="form-control" id="fGapAcumulo" readonly
+                    style="background:#f3f4f6;cursor:not-allowed;color:#6b7280;">
                 </div>
-                <div class="col-6 col-md-2 param-pair">
+                <div class="col-6 col-md-3 param-pair">
+                  <label for="fInicioDescanso">Início Descanso</label>
+                  <input type="datetime-local" class="form-control" id="fInicioDescanso" name="Inicio_Descanso">
+                </div>
+                <div class="col-6 col-md-3 param-pair">
+                  <label for="fFimDescanso">Fim Descanso</label>
+                  <input type="datetime-local" class="form-control" id="fFimDescanso" name="Fim_Descanso">
+                </div>
+                <div class="col-6 col-md-2 param-pair d-none">
                   <label for="fLigado">Ligado</label>
                   <input type="time" class="form-control" id="fLigado" name="Ligado">
                 </div>
-                <div class="col-6 col-md-2 param-pair">
-                  <label for="fDeligado">Deslig.</label>
-                  <input type="time" class="form-control" id="fDeligado" name="Deligado">
+                <div class="col-6 col-md-2 param-pair d-none">
+                  <label for="fDesligado">Deslig.</label>
+                  <input type="time" class="form-control" id="fDesligado" name="Desligado">
                 </div>
               </div>
             </div>
@@ -534,7 +566,7 @@
                 </div>
                 <div class="col-6 col-md-4 param-pair">
                   <label for="fFerro">Ferro <span style="color:#9ca3af;font-weight:400">(mg/L)</span></label>
-                  <input type="text" inputmode="decimal" class="form-control input-decimal" id="fFerro" name="Ferro" data-decimals="3" placeholder="0,000">
+                  <input type="text" inputmode="decimal" class="form-control input-decimal" id="fFerro" name="Ferro" data-decimals="2" placeholder="0,00">
                 </div>
                 <div class="col-6 col-md-4 param-pair">
                   <label for="fDureza">Dureza <span style="color:#9ca3af;font-weight:400">(mg/L)</span></label>
@@ -592,6 +624,9 @@
   </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+  const lancamentosData = {};
+  <%- JSON.stringify(lancamentos) %>.forEach(function (l) { lancamentosData[l.ID] = l; });
+
   function maskDecimalInput(el) {
     const decimals = parseInt(el.dataset.decimals || '2', 10);
     el.addEventListener('input', function () {
@@ -606,6 +641,23 @@
   function decimalToFloatStr(v) {
     if (!v) return '';
     return v.replace(/\./g, '').replace(',', '.');
+  }
+  function adaptLegacyJs(v) {
+    if (v == null || v === '') return null;
+    const n = Number(v);
+    if (n >= 100) return n / 100;
+    if (n >= 10)  return n / 10;
+    return n;
+  }
+  function fmtDecimalInput(v) {
+    if (v == null || v === '') return '';
+    return Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function toDatetimeLocalValue(v) {
+    if (!v) return '';
+    const dt = new Date(v);
+    const pad = n => String(n).padStart(2, '0');
+    return dt.getFullYear() + '-' + pad(dt.getMonth() + 1) + '-' + pad(dt.getDate()) + 'T' + pad(dt.getHours()) + ':' + pad(dt.getMinutes());
   }
 
   $(document).ready(function () {
@@ -625,6 +677,7 @@
           text: '<i class="bi bi-file-earmark-excel me-1"></i>Excel',
           className: 'btn btn-sm btn-excel',
           title: 'Lançamentos ETA',
+          exportOptions: { columns: ':not(.no-export)' },
         },
       ],
       initComplete: function () {
@@ -691,6 +744,8 @@
     $('#fTurno').select2({ ...s2opts, placeholder: '— Selecione —' });
     $('#fAspecto').select2({ ...s2opts, placeholder: '— Selecione —' });
     $('#fLocal').select2({ ...s2opts, placeholder: '— Selecione o local —' });
+    $('#fLocal').on('change', function () { updateGapAcumulo(); updateDescansoReadonly(); });
+    document.getElementById('fInicial').addEventListener('input', updateGapAcumulo);
     $('#fOperador').select2({
       dropdownParent: $('#medidorModal'),
       placeholder: 'Digite o nome do operador...',
@@ -729,10 +784,114 @@
       }
     });
 
-    document.getElementById('btnCadastrar').addEventListener('click', () => modal.show());
+    function findLastAcumuloReading(excludeId) {
+      let last = null;
+      Object.values(lancamentosData).forEach(function (l) {
+        if (l.LOCAL !== 'Acumulo' || l.Inicial == null) return;
+        if (excludeId && String(l.ID) === String(excludeId)) return;
+        if (!last || new Date(l.Data) > new Date(last.Data) || (new Date(l.Data).getTime() === new Date(last.Data).getTime() && l.ID > last.ID)) {
+          last = l;
+        }
+      });
+      return last;
+    }
+
+    function updateGapAcumulo() {
+      const wrap = document.getElementById('gapAcumuloWrap');
+      if ($('#fLocal').val() !== 'Acumulo') {
+        wrap.style.display = 'none';
+        return;
+      }
+      const last = findLastAcumuloReading(document.getElementById('fId').value);
+      if (!last) {
+        wrap.style.display = 'none';
+        return;
+      }
+      wrap.style.display = '';
+      const leituraStr = document.getElementById('fInicial').value;
+      const leitura = leituraStr !== '' ? parseInt(leituraStr, 10) : null;
+      const fGap = document.getElementById('fGapAcumulo');
+      if (leitura == null || isNaN(leitura)) {
+        fGap.value = 'Anterior: ' + last.Inicial;
+      } else {
+        fGap.value = (leitura - last.Inicial) + ' (ant.: ' + last.Inicial + ')';
+      }
+    }
+
+    function updateDescansoReadonly() {
+      const isAcumulo = $('#fLocal').val() === 'Acumulo';
+      [document.getElementById('fInicioDescanso'), document.getElementById('fFimDescanso')].forEach(function (el) {
+        el.readOnly = isAcumulo;
+        el.style.background = isAcumulo ? '#f3f4f6' : '#fff';
+        el.style.cursor = isAcumulo ? 'not-allowed' : '';
+        el.style.color = isAcumulo ? '#6b7280' : '';
+      });
+    }
+
+    function resetFormToCreate() {
+      const form = document.getElementById('formMedidor');
+      form.reset();
+      document.getElementById('fId').value = '';
+      document.getElementById('medidorModalTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i>Novo Lançamento ETA';
+      $('#fTurno').val('').trigger('change');
+      $('#fAspecto').val('').trigger('change');
+      $('#fLocal').val('').trigger('change');
+      $('#fOperador').val(null).trigger('change');
+      document.getElementById('fMatricula').value = '';
+      document.getElementById('fData').value = today;
+      updateGapAcumulo();
+      updateDescansoReadonly();
+    }
+
+    function openForEdit(id) {
+      const l = lancamentosData[id];
+      if (!l) return;
+
+      resetFormToCreate();
+      document.getElementById('fId').value = id;
+      document.getElementById('medidorModalTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i>Editar Lançamento ETA';
+
+      document.getElementById('fData').value = l.Data ? String(l.Data).substring(0, 10) : '';
+      document.getElementById('fMatricula').value = l.matricula || '';
+      document.getElementById('fInicial').value = (l.Inicial != null) ? l.Inicial : '';
+      document.getElementById('fInicioDescanso').value = toDatetimeLocalValue(l.Inicio_Descanso);
+      document.getElementById('fFimDescanso').value = toDatetimeLocalValue(l.Fim_Descanso);
+      document.getElementById('fLigado').value = l.Ligado || '';
+      document.getElementById('fDesligado').value = l.Desligado || '';
+      document.getElementById('fObs').value = l.OBS || '';
+
+      const turnoLabel = { 1: 'Manhã', 2: 'Tarde', 3: 'Noite' }[l.turno] || '';
+      $('#fTurno').val(turnoLabel).trigger('change');
+      $('#fAspecto').val(l.Aspecto_Visual || '').trigger('change');
+      $('#fLocal').val(l.LOCAL || '').trigger('change');
+
+      if (l.Operador) {
+        const opt = new Option(l.Operador, l.Operador, true, true);
+        $('#fOperador').append(opt).trigger('change');
+      }
+
+      document.getElementById('fCorVis').value        = fmtDecimalInput(l.Cor_Visual);
+      document.getElementById('fpH').value             = fmtDecimalInput(adaptLegacyJs(l.pH));
+      document.getElementById('fCloro').value          = fmtDecimalInput(adaptLegacyJs(l.Cloro));
+      document.getElementById('fTurb').value           = fmtDecimalInput(adaptLegacyJs(l.Turbidez));
+      document.getElementById('fAlc').value            = fmtDecimalInput(l.Alcalinidade);
+      document.getElementById('fFerro').value          = fmtDecimalInput(adaptLegacyJs(l.Ferro));
+      document.getElementById('fDureza').value         = fmtDecimalInput(l.Dureza);
+      document.getElementById('fCondutividade').value  = fmtDecimalInput(l.Condutividade);
+
+      updateGapAcumulo();
+      updateDescansoReadonly();
+      modal.show();
+    }
+
+    document.querySelectorAll('.btn-edit-lancamento').forEach(function (btn) {
+      btn.addEventListener('click', function () { openForEdit(btn.dataset.id); });
+    });
+
+    document.getElementById('btnCadastrar').addEventListener('click', () => { resetFormToCreate(); modal.show(); });
     const btnCadastrarMobile = document.getElementById('btnCadastrarMobile');
     if (btnCadastrarMobile) {
-      btnCadastrarMobile.addEventListener('click', () => modal.show());
+      btnCadastrarMobile.addEventListener('click', () => { resetFormToCreate(); modal.show(); });
     }
     document.getElementById('btnCancelar').addEventListener('click', function() {
       const form = document.getElementById('formMedidor');
@@ -763,29 +922,26 @@
       setBusy(true);
       alertEl.style.display = 'none';
 
+      const editId = document.getElementById('fId').value;
       const body = {};
       new FormData(form).forEach((v, k) => { body[k] = v; });
       document.querySelectorAll('.input-decimal').forEach(el => {
         body[el.name] = decimalToFloatStr(body[el.name]);
       });
 
+      const url = editId ? ('/medidor/editar/' + editId) : '/medidor/cadastrar';
+
       try {
-        const resp = await fetch('/medidor/cadastrar', {
+        const resp = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
         });
         const json = await resp.json();
         if (json.success) {
-          showAlert('Lançamento salvo com sucesso!', 'success');
+          showAlert(editId ? 'Lançamento atualizado com sucesso!' : 'Lançamento salvo com sucesso!', 'success');
           if (json.csrfToken) document.getElementById('csrfInput').value = json.csrfToken;
-          form.reset();
-          $('#fTurno').val('').trigger('change');
-          $('#fAspecto').val('').trigger('change');
-          $('#fLocal').val('').trigger('change');
-          $('#fOperador').val(null).trigger('change');
-          document.getElementById('fMatricula').value = '';
-          document.getElementById('fData').value = today;
+          resetFormToCreate();
           setTimeout(() => { modal.hide(); location.reload(); }, 1200);
         } else {
           showAlert(json.error || 'Erro ao salvar.', 'danger');
