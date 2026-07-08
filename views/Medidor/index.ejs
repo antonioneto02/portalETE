@@ -322,6 +322,8 @@
                     <th>Ligado</th>
                     <th>Desligado</th>
                     <th>OBS</th>
+                    <th>Cadastro</th>
+                    <th>Alteração</th>
                     <th class="no-export">Ações</th>
                   </tr>
                 </thead>
@@ -354,6 +356,8 @@
                     <td><%= l.Ligado||'—' %></td>
                     <td><%= l.Desligado||'—' %></td>
                     <td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><%= l.OBS||'—' %></td>
+                    <td><%= fmtDateTime(l.DataCadastro) %></td>
+                    <td><%= fmtDateTime(l.DataAlteracao) %></td>
                     <td class="no-export">
                       <button type="button" class="btn btn-sm btn-outline-secondary btn-edit-lancamento" data-id="<%= l.ID %>" title="Editar">
                         <i class="bi bi-pencil"></i>
@@ -433,6 +437,11 @@
                     <% if (l.OBS) { %>
                       <div class="mrc-obs"><i class="bi bi-chat-left-text me-1"></i><%= l.OBS %></div>
                     <% } %>
+                    <div class="mrc-subhead">Registro</div>
+                    <div class="mrc-grid">
+                      <div class="mrc-item"><span class="mrc-lbl">Cadastro</span><span class="mrc-val"><%= fmtDateTime(l.DataCadastro) %></span></div>
+                      <div class="mrc-item"><span class="mrc-lbl">Alteração</span><span class="mrc-val"><%= fmtDateTime(l.DataAlteracao) %></span></div>
+                    </div>
                     <div style="margin-top:10px;">
                       <button type="button" class="btn btn-sm btn-outline-secondary btn-edit-lancamento" data-id="<%= l.ID %>" style="width:100%;">
                         <i class="bi bi-pencil me-1"></i>Editar
@@ -467,8 +476,11 @@
                     <th>Data/Hora</th>
                     <th>Tipo</th>
                     <th>Fornecedor</th>
+                    <th>Operador</th>
                     <th>Leitura</th>
                     <th>Pressão</th>
+                    <th>Cadastro</th>
+                    <th>Alteração</th>
                     <th class="no-export">Ações</th>
                   </tr>
                 </thead>
@@ -478,8 +490,11 @@
                     <td data-order="<%= g.DataHora ? new Date(g.DataHora).getTime() : 0 %>"><%= fmtDateTime(g.DataHora) %></td>
                     <td><%= g.Tipo||'—' %></td>
                     <td><%= g.Fornecedor||'—' %></td>
+                    <td><%= g.Operador||'—' %></td>
                     <td><%= fmtInt(g.Leitura) %></td>
                     <td><%= fmtInt(g.Pressao) %></td>
+                    <td><%= fmtDateTime(g.DataCadastro) %></td>
+                    <td><%= fmtDateTime(g.DataAlteracao) %></td>
                     <td class="no-export">
                       <button type="button" class="btn btn-sm btn-outline-secondary btn-edit-gas" data-id="<%= g.ID %>" title="Editar">
                         <i class="bi bi-pencil"></i>
@@ -495,7 +510,7 @@
               <div class="mob-toolbar">
                 <div class="mob-search">
                   <i class="bi bi-search"></i>
-                  <input type="text" id="mobileSearchInputGas" placeholder="Buscar tipo, fornecedor...">
+                  <input type="text" id="mobileSearchInputGas" placeholder="Buscar tipo, fornecedor, operador...">
                 </div>
               </div>
 
@@ -504,14 +519,14 @@
               <% } %>
 
               <% lancamentosGas.forEach(function(g) {
-                const searchStr = ((g.Tipo||'') + ' ' + (g.Fornecedor||'')).toLowerCase();
+                const searchStr = ((g.Tipo||'') + ' ' + (g.Fornecedor||'') + ' ' + (g.Operador||'')).toLowerCase();
               %>
                 <div class="mobile-reg-card" data-search="<%= searchStr %>" data-id="<%= g.ID %>">
                   <div class="mrc-row">
                     <div class="mrc-icon"><i class="bi bi-cloud-fog2"></i></div>
                     <div class="mrc-main">
                       <div class="mrc-title"><%= g.Tipo||'—' %></div>
-                      <div class="mrc-sub"><%= fmtDateTime(g.DataHora) %> · <%= g.Fornecedor||'—' %></div>
+                      <div class="mrc-sub"><%= fmtDateTime(g.DataHora) %> · <%= g.Fornecedor||'—' %> · <%= g.Operador||'—' %></div>
                     </div>
                     <div class="mrc-side">
                       <i class="bi bi-chevron-down mrc-chevron"></i>
@@ -520,8 +535,14 @@
                   <div class="mrc-details">
                     <div class="mrc-subhead">Detalhes</div>
                     <div class="mrc-grid">
+                      <div class="mrc-item"><span class="mrc-lbl">Operador</span><span class="mrc-val"><%= g.Operador||'—' %></span></div>
                       <div class="mrc-item"><span class="mrc-lbl">Leitura</span><span class="mrc-val"><%= fmtInt(g.Leitura) %></span></div>
                       <div class="mrc-item"><span class="mrc-lbl">Pressão</span><span class="mrc-val"><%= fmtInt(g.Pressao) %></span></div>
+                    </div>
+                    <div class="mrc-subhead">Registro</div>
+                    <div class="mrc-grid">
+                      <div class="mrc-item"><span class="mrc-lbl">Cadastro</span><span class="mrc-val"><%= fmtDateTime(g.DataCadastro) %></span></div>
+                      <div class="mrc-item"><span class="mrc-lbl">Alteração</span><span class="mrc-val"><%= fmtDateTime(g.DataAlteracao) %></span></div>
                     </div>
                     <div style="margin-top:10px;">
                       <button type="button" class="btn btn-sm btn-outline-secondary btn-edit-gas" data-id="<%= g.ID %>" style="width:100%;">
@@ -773,6 +794,10 @@
                     <option>White Martins</option>
                   </select>
                 </div>
+                <div class="col-12 col-md-4 param-pair">
+                  <label for="gOperador">Operador</label>
+                  <select class="form-control" id="gOperador" name="Operador"></select>
+                </div>
                 <div class="col-6 col-md-3 param-pair">
                   <label for="gLeitura">Leitura</label>
                   <input type="number" class="form-control" id="gLeitura" name="Leitura" placeholder="0">
@@ -981,6 +1006,22 @@
     const s2optsGas = { dropdownParent: $('#gasModal'), allowClear: true, width: '100%' };
     $('#gTipo').select2({ ...s2optsGas, placeholder: '— Selecione —' });
     $('#gFornecedor').select2({ ...s2optsGas, placeholder: '— Selecione —' });
+    $('#gOperador').select2({
+      dropdownParent: $('#gasModal'),
+      placeholder: 'Digite o nome do operador...',
+      allowClear: true,
+      width: '100%',
+      minimumInputLength: 2,
+      language: { inputTooShort: () => 'Digite ao menos 2 caracteres...' },
+      ajax: {
+        url: '/api/operadores',
+        dataType: 'json',
+        delay: 280,
+        data: p => ({ q: p.term || '' }),
+        processResults: d => ({ results: d }),
+        cache: true,
+      },
+    });
     $('#gTipo').on('change', function () { updateGapGas(); });
     document.getElementById('gLeitura').addEventListener('input', updateGapGas);
     $('#fLocal').on('change', function () { updateGapAcumulo(); updateDescansoReadonly(); });
@@ -1175,6 +1216,7 @@
       document.getElementById('gasModalTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i>Nova Leitura de Gás';
       $('#gTipo').val('').trigger('change');
       $('#gFornecedor').val('').trigger('change');
+      $('#gOperador').val(null).trigger('change');
     }
 
     function openGasForEdit(id) {
@@ -1188,6 +1230,10 @@
       document.getElementById('gDataHora').value = toDatetimeLocalValue(g.DataHora);
       $('#gTipo').val(g.Tipo || '').trigger('change');
       $('#gFornecedor').val(g.Fornecedor || '').trigger('change');
+      if (g.Operador) {
+        const opt = new Option(g.Operador, g.Operador, true, true);
+        $('#gOperador').append(opt).trigger('change');
+      }
       document.getElementById('gLeitura').value = (g.Leitura != null) ? g.Leitura : '';
       document.getElementById('gPressao').value = (g.Pressao != null) ? g.Pressao : '';
 

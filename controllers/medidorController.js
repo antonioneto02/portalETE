@@ -19,13 +19,15 @@ async function renderMedidor(req, res) {
         [Ferro],
         [Dureza],
         [Condutividade],
-        [OBS]
+        [OBS],
+        [DataCadastro], [DataAlteracao]
       FROM [dw].[dbo].[FATO_LANCAMENTO_ETA]
       ORDER BY [Data] DESC, [ID] DESC
     `);
     const resultGas = await pool.request().query(`
       SELECT TOP 500
-        [ID], [DataHora], [Tipo], [Fornecedor], [Leitura], [Pressao]
+        [ID], [DataHora], [Tipo], [Fornecedor], [Operador], [Leitura], [Pressao],
+        [DataCadastro], [DataAlteracao]
       FROM [dw].[dbo].[FATO_LANCAMENTO_GAS]
       ORDER BY [DataHora] DESC, [ID] DESC
     `);
@@ -101,7 +103,8 @@ async function cadastrarLancamento(req, res) {
          [pH],[Cloro],
          [Alcalinidade],
          [Turbidez],
-         [Ferro],[Dureza],[Condutividade],[OBS])
+         [Ferro],[Dureza],[Condutividade],[OBS],
+         [DataCadastro])
       VALUES
         (@Data,@turno,@matricula,@Operador,@LOCAL,
          @Inicial,@Inicio_Descanso,@Fim_Descanso,@Desligado,@Ligado,
@@ -109,7 +112,8 @@ async function cadastrarLancamento(req, res) {
          @pH,@Cloro,
          @Alcalinidade,
          @Turbidez,
-         @Ferro,@Dureza,@Condutividade,@OBS)
+         @Ferro,@Dureza,@Condutividade,@OBS,
+         GETDATE())
     `);
 
     const newCsrf = generateCsrfToken(req);
@@ -187,7 +191,8 @@ async function atualizarLancamento(req, res) {
         [Ferro] = @Ferro,
         [Dureza] = @Dureza,
         [Condutividade] = @Condutividade,
-        [OBS] = @OBS
+        [OBS] = @OBS,
+        [DataAlteracao] = GETDATE()
       WHERE [ID] = @ID
     `);
 

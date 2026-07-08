@@ -21,14 +21,15 @@ async function cadastrarGas(req, res) {
     r.input('DataHora',   sql.DateTime2,    toDateTime(b.DataHora));
     r.input('Tipo',       sql.VarChar(20),  toStr(b.Tipo));
     r.input('Fornecedor', sql.VarChar(50),  toStr(b.Fornecedor));
+    r.input('Operador',   sql.VarChar(100), toStr(b.Operador));
     r.input('Leitura',    sql.Int,          toInt(b.Leitura));
     r.input('Pressao',    sql.Int,          toInt(b.Pressao));
 
     await r.query(`
       INSERT INTO [dw].[dbo].[FATO_LANCAMENTO_GAS]
-        ([DataHora],[Tipo],[Fornecedor],[Leitura],[Pressao])
+        ([DataHora],[Tipo],[Fornecedor],[Operador],[Leitura],[Pressao],[DataCadastro])
       VALUES
-        (@DataHora,@Tipo,@Fornecedor,@Leitura,@Pressao)
+        (@DataHora,@Tipo,@Fornecedor,@Operador,@Leitura,@Pressao,GETDATE())
     `);
 
     const newCsrf = generateCsrfToken(req);
@@ -64,6 +65,7 @@ async function atualizarGas(req, res) {
     r.input('DataHora',    sql.DateTime2,    toDateTime(b.DataHora));
     r.input('Tipo',        sql.VarChar(20),  toStr(b.Tipo));
     r.input('Fornecedor',  sql.VarChar(50),  toStr(b.Fornecedor));
+    r.input('Operador',    sql.VarChar(100), toStr(b.Operador));
     r.input('Leitura',     sql.Int,          toInt(b.Leitura));
     r.input('Pressao',     sql.Int,          toInt(b.Pressao));
 
@@ -73,8 +75,10 @@ async function atualizarGas(req, res) {
         [DataHora] = @DataHora,
         [Tipo] = @Tipo,
         [Fornecedor] = @Fornecedor,
+        [Operador] = @Operador,
         [Leitura] = @Leitura,
-        [Pressao] = @Pressao
+        [Pressao] = @Pressao,
+        [DataAlteracao] = GETDATE()
       WHERE [ID] = @ID
     `);
 
