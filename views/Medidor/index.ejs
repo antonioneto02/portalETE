@@ -777,6 +777,11 @@
                   <label for="gLeitura">Leitura</label>
                   <input type="number" class="form-control" id="gLeitura" name="Leitura" placeholder="0">
                 </div>
+                <div class="col-6 col-md-3 param-pair" id="gapGasWrap" style="display:none;">
+                  <label for="gGapGas">Gap</label>
+                  <input type="text" class="form-control" id="gGapGas" readonly
+                    style="background:#f3f4f6;cursor:not-allowed;color:#6b7280;">
+                </div>
                 <div class="col-6 col-md-3 param-pair">
                   <label for="gPressao">Pressão</label>
                   <input type="number" class="form-control" id="gPressao" name="Pressao" placeholder="0">
@@ -892,6 +897,10 @@
       tblGasInstance.columns.adjust();
     });
 
+    if (window.location.hash === '#tab-gas') {
+      bootstrap.Tab.getOrCreateInstance(document.getElementById('tab-gas-btn')).show();
+    }
+
     (function initMobileCardList() {
       const mobileSearchInput = document.getElementById('mobileSearchInput');
       const cards = document.querySelectorAll('#mobileCardList .mobile-reg-card');
@@ -972,6 +981,8 @@
     const s2optsGas = { dropdownParent: $('#gasModal'), allowClear: true, width: '100%' };
     $('#gTipo').select2({ ...s2optsGas, placeholder: '— Selecione —' });
     $('#gFornecedor').select2({ ...s2optsGas, placeholder: '— Selecione —' });
+    $('#gTipo').on('change', function () { updateGapGas(); });
+    document.getElementById('gLeitura').addEventListener('input', updateGapGas);
     $('#fLocal').on('change', function () { updateGapAcumulo(); updateDescansoReadonly(); });
     document.getElementById('fInicial').addEventListener('input', updateGapAcumulo);
     $('#fOperador').select2({
@@ -1047,6 +1058,38 @@
       const fGap = document.getElementById('fGapAcumulo');
       fGap.value = leitura - last.Inicial;
       fGap.title = 'Leitura anterior: ' + last.Inicial;
+    }
+
+    function findLastGasReading(tipo, excludeId) {
+      let last = null;
+      Object.values(lancamentosGasData).forEach(function (g) {
+        if (g.Tipo !== tipo || g.Leitura == null) return;
+        if (excludeId && String(g.ID) === String(excludeId)) return;
+        if (!last || new Date(g.DataHora) > new Date(last.DataHora) || (new Date(g.DataHora).getTime() === new Date(last.DataHora).getTime() && g.ID > last.ID)) {
+          last = g;
+        }
+      });
+      return last;
+    }
+
+    function updateGapGas() {
+      const wrap = document.getElementById('gapGasWrap');
+      const tipo = $('#gTipo').val();
+      if (!tipo) {
+        wrap.style.display = 'none';
+        return;
+      }
+      const leituraStr = document.getElementById('gLeitura').value;
+      const leitura = leituraStr !== '' ? parseInt(leituraStr, 10) : null;
+      const last = findLastGasReading(tipo, document.getElementById('gId').value);
+      if (!last || leitura == null || isNaN(leitura)) {
+        wrap.style.display = 'none';
+        return;
+      }
+      wrap.style.display = '';
+      const gGap = document.getElementById('gGapGas');
+      gGap.value = leitura - last.Leitura;
+      gGap.title = 'Leitura anterior: ' + last.Leitura;
     }
 
     function updateDescansoReadonly() {
@@ -1148,6 +1191,7 @@
       document.getElementById('gLeitura').value = (g.Leitura != null) ? g.Leitura : '';
       document.getElementById('gPressao').value = (g.Pressao != null) ? g.Pressao : '';
 
+      updateGapGas();
       gasModal.show();
     }
 
@@ -1219,7 +1263,7 @@
             document.getElementById('csrfInputGas').value = json.csrfToken;
           }
           resetFormToCreate();
-          setTimeout(() => { modal.hide(); location.reload(); }, 1200);
+          setTimeout(() => { modal.hide(); location.hash = 'tab-agua'; location.reload(); }, 1200);
         } else {
           showAlert(json.error || 'Erro ao salvar.', 'danger');
         }
@@ -1275,7 +1319,7 @@
             document.getElementById('csrfInputGas').value = json.csrfToken;
           }
           resetGasFormToCreate();
-          setTimeout(() => { gasModal.hide(); location.reload(); }, 1200);
+          setTimeout(() => { gasModal.hide(); location.hash = 'tab-gas'; location.reload(); }, 1200);
         } else {
           showAlertGas(json.error || 'Erro ao salvar.', 'danger');
         }
