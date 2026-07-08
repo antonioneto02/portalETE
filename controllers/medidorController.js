@@ -23,12 +23,19 @@ async function renderMedidor(req, res) {
       FROM [dw].[dbo].[FATO_LANCAMENTO_ETA]
       ORDER BY [Data] DESC, [ID] DESC
     `);
+    const resultGas = await pool.request().query(`
+      SELECT TOP 500
+        [ID], [DataHora], [Tipo], [Fornecedor], [Leitura], [Pressao]
+      FROM [dw].[dbo].[FATO_LANCAMENTO_GAS]
+      ORDER BY [DataHora] DESC, [ID] DESC
+    `);
     const csrfToken = generateCsrfToken(req);
     res.render('Medidor/index', {
       username: req.session.username || req.session.userId || 'Usuário',
       isAdmin: req.session.isAdmin || false,
       currentPath: '/medidor',
       lancamentos: result.recordset,
+      lancamentosGas: resultGas.recordset,
       csrfToken,
       dbError: null,
     });
@@ -40,6 +47,7 @@ async function renderMedidor(req, res) {
       isAdmin: req.session.isAdmin || false,
       currentPath: '/medidor',
       lancamentos: [],
+      lancamentosGas: [],
       csrfToken,
       dbError: 'Não foi possível carregar os dados. Tente novamente.',
     });
