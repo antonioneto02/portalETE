@@ -10,7 +10,18 @@
       "Bash(node -e ' *)",
       "Bash(node scripts/create-fato-lancamento-filtro.js)",
       "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3021/medidor)",
-      "Bash(rm -f render_test.js)"
+      "Bash(rm -f render_test.js)",
+      "Bash(node -e \"console.log\\(require.resolve\\('jsdom'\\)\\)\")",
+      "Bash(npm init *)",
+      "Bash(node test_tab_bug.js)",
+      "Bash(node hash_repro.js)",
+      "Bash(node hash_repro.mjs)",
+      "Bash(curl -s -o /dev/null -w \"jsdelivr: %{http_code}\\\\n\" --max-time 5 https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js)",
+      "Bash(curl -s -o /dev/null -w \"datatables: %{http_code}\\\\n\" --max-time 5 https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js)",
+      "Bash(node real_browser_test.mjs)",
+      "Bash(rm -rf \"C:\\\\Users\\\\NERIAS~1.SOU\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\e--Projetos-portalETE\\\\47150c9e-cd39-4d89-9b3c-a9158eaf43c1\\\\scratchpad\"/*)",
+      "Bash(curl -s -o /dev/null -w \"medidor: HTTP %{http_code}\\\\n\" http://localhost:3021/medidor)",
+      "Bash(curl -s -o /dev/null -w \"home: HTTP %{http_code}\\\\n\" http://localhost:3021/home)"
     ]
   }
 }

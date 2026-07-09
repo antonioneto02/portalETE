@@ -8,11 +8,16 @@ async function renderHome(req, res) {
   let stats = {
     ultimoDia: null, trend: [], byTurno: [],
     phDist: [], totalGeral: 0, conformidade: null,
+    gasPorTipo: [], gasPorFornecedor: [],
+    filtroPorTipo: [], filtroPorEquipamento: [],
   };
 
   try {
     const pool = await getPool();
-    const [ultimoDiaR, trendR, byTurnoR, phDistR, totalR, confR] = await Promise.all([
+    const [
+      ultimoDiaR, trendR, byTurnoR, phDistR, totalR, confR,
+      gasPorTipoR, gasPorFornecedorR, filtroPorTipoR, filtroPorEquipamentoR,
+    ] = await Promise.all([
 
       pool.request().query(`
         SELECT
@@ -102,6 +107,30 @@ async function renderHome(req, res) {
         FROM [dw].[dbo].[FATO_LANCAMENTO_ETA]
         WHERE [pH] IS NOT NULL AND [pH] > 0
       `),
+
+      pool.request().query(`
+        SELECT ISNULL([Tipo],'—') AS tipo, COUNT(*) AS total
+        FROM [dw].[dbo].[FATO_LANCAMENTO_GAS]
+        GROUP BY [Tipo]
+      `),
+
+      pool.request().query(`
+        SELECT ISNULL([Fornecedor],'—') AS fornecedor, COUNT(*) AS total
+        FROM [dw].[dbo].[FATO_LANCAMENTO_GAS]
+        GROUP BY [Fornecedor]
+      `),
+
+      pool.request().query(`
+        SELECT ISNULL([Tipo],'—') AS tipo, COUNT(*) AS total
+        FROM [dw].[dbo].[FATO_LANCAMENTO_FILTRO]
+        GROUP BY [Tipo]
+      `),
+
+      pool.request().query(`
+        SELECT ISNULL([Filtro],'—') AS filtro, COUNT(*) AS total
+        FROM [dw].[dbo].[FATO_LANCAMENTO_FILTRO]
+        GROUP BY [Filtro]
+      `),
     ]);
 
     const d = ultimoDiaR.recordset[0];
@@ -123,6 +152,11 @@ async function renderHome(req, res) {
     stats.phDist       = phDistR.recordset;
     stats.totalGeral   = totalR.recordset[0]?.total ?? 0;
     stats.conformidade = confR.recordset[0] || null;
+
+    stats.gasPorTipo          = gasPorTipoR.recordset;
+    stats.gasPorFornecedor    = gasPorFornecedorR.recordset;
+    stats.filtroPorTipo       = filtroPorTipoR.recordset;
+    stats.filtroPorEquipamento = filtroPorEquipamentoR.recordset;
 
   } catch (err) {
     console.error('[Home] Erro ao buscar stats:', err);

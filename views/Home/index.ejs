@@ -135,7 +135,7 @@
             </div>
           </div>
         </div>
-        <div class="row g-3">
+        <div class="row g-3 mb-3">
           <div class="col-12 col-sm-6 col-lg-6">
             <div class="card chart-card">
               <div class="card-header"><i class="bi bi-bar-chart me-2"></i>Registros por dia</div>
@@ -146,6 +146,36 @@
             <div class="card chart-card">
               <div class="card-header"><i class="bi bi-distribute-vertical me-2"></i>Distribuição de pH</div>
               <div class="card-body p-2"><div class="chart-wrap"><canvas id="chartPHDist"></canvas></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-sm-6 col-lg-6">
+            <div class="card chart-card">
+              <div class="card-header"><i class="bi bi-cloud-fog2 me-2"></i>Gás — leituras por tipo</div>
+              <div class="card-body p-2"><div class="chart-wrap"><canvas id="chartGasTipo"></canvas></div></div>
+            </div>
+          </div>
+          <div class="col-12 col-sm-6 col-lg-6">
+            <div class="card chart-card">
+              <div class="card-header"><i class="bi bi-truck me-2"></i>Gás — leituras por fornecedor</div>
+              <div class="card-body p-2"><div class="chart-wrap"><canvas id="chartGasFornecedor"></canvas></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-12 col-sm-6 col-lg-6">
+            <div class="card chart-card">
+              <div class="card-header"><i class="bi bi-funnel me-2"></i>Filtros — operações por tipo</div>
+              <div class="card-body p-2"><div class="chart-wrap"><canvas id="chartFiltroTipo"></canvas></div></div>
+            </div>
+          </div>
+          <div class="col-12 col-sm-6 col-lg-6">
+            <div class="card chart-card">
+              <div class="card-header"><i class="bi bi-hdd-stack me-2"></i>Filtros — operações por equipamento</div>
+              <div class="card-body p-2"><div class="chart-wrap"><canvas id="chartFiltroEquipamento"></canvas></div></div>
             </div>
           </div>
         </div>
@@ -324,6 +354,65 @@
         },
       });
     }
+
+    function doughnut(canvasId, rows, labelKey, colors) {
+      if (!rows || !rows.length) return;
+      new Chart(document.getElementById(canvasId), {
+        type: 'doughnut',
+        data: {
+          labels: rows.map(r => r[labelKey]),
+          datasets: [{
+            data: rows.map(r => r.total),
+            backgroundColor: colors,
+            borderWidth: 2, borderColor: '#fff',
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 12, font: FONT, padding: 12 } },
+            tooltip: { callbacks: {
+              label: ctx => {
+                const total = rows.reduce((a, r) => a + r.total, 0);
+                return ` ${ctx.label}: ${ctx.parsed} (${Math.round(ctx.parsed / total * 100)}%)`;
+              },
+            }},
+          },
+          cutout: '62%',
+        },
+      });
+    }
+
+    function barCount(canvasId, rows, labelKey) {
+      if (!rows || !rows.length) return;
+      new Chart(document.getElementById(canvasId), {
+        type: 'bar',
+        data: {
+          labels: rows.map(r => r[labelKey]),
+          datasets: [{
+            label: 'Registros',
+            data: rows.map(r => r.total),
+            backgroundColor: 'rgba(43,40,111,.75)',
+            borderColor: '#2B286F',
+            borderWidth: 1, borderRadius: 4,
+          }],
+        },
+        options: {
+          ...baseOpts(),
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { font: FONT }, grid: { display: false } },
+            y: { ticks: { font: FONT, stepSize: 1 }, beginAtZero: true, grid: { color: '#f0f0f0' } },
+          },
+        },
+      });
+    }
+
+    doughnut('chartGasTipo', S.gasPorTipo, 'tipo', ['#2B286F', '#d97706', '#64748b']);
+    barCount('chartGasFornecedor', S.gasPorFornecedor, 'fornecedor');
+    doughnut('chartFiltroTipo', S.filtroPorTipo, 'tipo', ['#16a34a', '#7c3aed', '#64748b']);
+    barCount('chartFiltroEquipamento', S.filtroPorEquipamento, 'filtro');
   })();
   </script>
 </body>

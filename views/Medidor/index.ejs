@@ -291,7 +291,60 @@
                 if (classes.includes('val-warn')) return 'warn';
                 return 'ok';
               }
+              function indBg(v, min, max) {
+                if (v==null) return ['#64748b','#94a3b8'];
+                if (min!=null && max!=null) {
+                  if (v>=min && v<=max) return ['#166534','#16a34a'];
+                  if (v<min*0.85 || v>max*1.15) return ['#991b1b','#b91c1c'];
+                  return ['#92400e','#d97706'];
+                }
+                return ['#1e40af','#2B286F'];
+              }
+              function diasDesde(dataStr) {
+                if (!dataStr) return null;
+                return Math.floor((Date.now() - new Date(dataStr).getTime()) / 86400000);
+              }
+              function diasBg(dias) {
+                if (dias==null) return ['#64748b','#94a3b8'];
+                if (dias<=7)  return ['#166534','#16a34a'];
+                if (dias<=15) return ['#92400e','#d97706'];
+                return ['#991b1b','#b91c1c'];
+              }
+              function media(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null; }
+
+              const todayStr = new Date().toISOString().substring(0,10);
+              const aguaHojeCount = lancamentos.filter(l => l.Data && String(l.Data).substring(0,10) === todayStr).length;
+              const aguaPhVals = lancamentos.map(l => raw(l.pH)).filter(v => v != null);
+              const aguaTurbVals = lancamentos.map(l => raw(l.Turbidez)).filter(v => v != null);
+              const aguaPhMedio = media(aguaPhVals);
+              const aguaTurbMedio = media(aguaTurbVals);
+              const aguaPhConformidade = aguaPhVals.length
+                ? (aguaPhVals.filter(v => v>=6.5 && v<=9.5).length / aguaPhVals.length * 100)
+                : null;
+              const aguaAlertasCount = lancamentos.filter(l => overallStatus(l) === 'bad').length;
             %>
+            <div class="indicators-bar">
+              <div class="indicator-card" style="background:linear-gradient(135deg,#1e40af,#2B286F);">
+                <div class="indicator-val"><%= aguaHojeCount %></div>
+                <div class="indicator-lbl">Registros hoje</div>
+              </div>
+              <div class="indicator-card" style="background:linear-gradient(135deg,<%= indBg(aguaPhMedio,6.5,9.5).join(',') %>);">
+                <div class="indicator-val"><%= aguaPhMedio!=null ? fmtNum(aguaPhMedio,2) : '—' %></div>
+                <div class="indicator-lbl">pH médio</div>
+              </div>
+              <div class="indicator-card" style="background:linear-gradient(135deg,<%= indBg(aguaTurbMedio,0,1.0).join(',') %>);">
+                <div class="indicator-val"><%= aguaTurbMedio!=null ? fmtNum(aguaTurbMedio,2) : '—' %></div>
+                <div class="indicator-lbl">Turbidez média</div>
+              </div>
+              <div class="indicator-card" style="background:linear-gradient(135deg,#065f46,#059669);">
+                <div class="indicator-val"><%= aguaPhConformidade!=null ? fmtNum(aguaPhConformidade,1)+'%' : '—' %></div>
+                <div class="indicator-lbl">Conformidade pH</div>
+              </div>
+              <div class="indicator-card" style="background:linear-gradient(135deg,<%= aguaAlertasCount>0 ? '#991b1b,#b91c1c' : '#166534,#16a34a' %>);">
+                <div class="indicator-val"><%= aguaAlertasCount %></div>
+                <div class="indicator-lbl">Alertas</div>
+              </div>
+            </div>
             <div class="d-none d-md-block" style="overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;">
               <table id="tblMedidor" class="table table-striped table-hover dt-compact w-100">
                 <thead>
@@ -463,6 +516,34 @@
             </button>
           </div>
           <div class="card-body p-0 p-md-3">
+            <%
+              const gasPressaoVals = lancamentosGas.map(g => raw(g.Pressao)).filter(v => v != null);
+              const gasPressaoMedia = media(gasPressaoVals);
+              function ultimaLeituraGas(tipo) {
+                const rows = lancamentosGas.filter(g => g.Tipo === tipo);
+                return rows.length ? rows[0].DataHora : null;
+              }
+              const diasNitrogenio = diasDesde(ultimaLeituraGas('Nitrogênio'));
+              const diasCO2 = diasDesde(ultimaLeituraGas('CO2'));
+            %>
+            <div class="indicators-bar">
+              <div class="indicator-card" style="background:linear-gradient(135deg,#1e40af,#2B286F);">
+                <div class="indicator-val"><%= lancamentosGas.length %></div>
+                <div class="indicator-lbl">Registros</div>
+              </div>
+              <div class="indicator-card" style="background:linear-gradient(135deg,#1e40af,#2B286F);">
+                <div class="indicator-val"><%= gasPressaoMedia!=null ? fmtNum(gasPressaoMedia) : '—' %></div>
+                <div class="indicator-lbl">Pressão média</div>
+              </div>
+              <div class="indicator-card" style="background:linear-gradient(135deg,<%= diasBg(diasNitrogenio).join(',') %>);">
+                <div class="indicator-val"><%= diasNitrogenio!=null ? diasNitrogenio : '—' %></div>
+                <div class="indicator-lbl">Dias s/ leitura N₂</div>
+              </div>
+              <div class="indicator-card" style="background:linear-gradient(135deg,<%= diasBg(diasCO2).join(',') %>);">
+                <div class="indicator-val"><%= diasCO2!=null ? diasCO2 : '—' %></div>
+                <div class="indicator-lbl">Dias s/ leitura CO2</div>
+              </div>
+            </div>
             <div class="d-none d-md-block" style="overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;">
               <table id="tblGas" class="table table-striped table-hover dt-compact w-100">
                 <thead>
@@ -565,6 +646,34 @@
             </button>
           </div>
           <div class="card-body p-0 p-md-3">
+            <%
+              const filtroRetroCount = lancamentosFiltro.filter(f => f.Tipo === 'Retrolavagem').length;
+              const filtroRegenCount = lancamentosFiltro.filter(f => f.Tipo === 'Regeneramento').length;
+              function ultimaDoTipoFiltro(tipo) {
+                const rows = lancamentosFiltro.filter(f => f.Tipo === tipo);
+                return rows.length ? rows[0].DataHora : null;
+              }
+              const diasRetro = diasDesde(ultimaDoTipoFiltro('Retrolavagem'));
+              const diasRegen = diasDesde(ultimaDoTipoFiltro('Regeneramento'));
+            %>
+            <div class="indicators-bar">
+              <div class="indicator-card" style="background:linear-gradient(135deg,#16a34a,#166534);">
+                <div class="indicator-val"><%= filtroRetroCount %></div>
+                <div class="indicator-lbl">Retrolavagens</div>
+              </div>
+              <div class="indicator-card" style="background:linear-gradient(135deg,#7c3aed,#5b21b6);">
+                <div class="indicator-val"><%= filtroRegenCount %></div>
+                <div class="indicator-lbl">Regenerações</div>
+              </div>
+              <div class="indicator-card" style="background:linear-gradient(135deg,<%= diasBg(diasRetro).join(',') %>);">
+                <div class="indicator-val"><%= diasRetro!=null ? diasRetro : '—' %></div>
+                <div class="indicator-lbl">Dias s/ retrolavagem</div>
+              </div>
+              <div class="indicator-card" style="background:linear-gradient(135deg,<%= diasBg(diasRegen).join(',') %>);">
+                <div class="indicator-val"><%= diasRegen!=null ? diasRegen : '—' %></div>
+                <div class="indicator-lbl">Dias s/ regeneração</div>
+              </div>
+            </div>
             <div class="d-none d-md-block" style="overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;">
               <table id="tblFiltro" class="table table-striped table-hover dt-compact w-100">
                 <thead>
@@ -679,6 +788,38 @@
   <button type="button" class="mob-fab d-md-none d-none" id="btnCadastrarFiltroMobile" aria-label="Cadastrar nova leitura de filtro">
     <i class="bi bi-plus-lg"></i>
   </button>
+
+  <script>
+  (function () {
+    // Restaura a aba correta pelo hash da URL usando só JS puro, sem depender
+    // de jQuery/Bootstrap/DataTables terem carregado — se algum desses scripts
+    // externos falhar ou demorar, a aba ainda assim fica correta.
+    var activeTab = { '#tab-gas': 'gas', '#tab-filtro': 'filtro' }[window.location.hash];
+    if (!activeTab) return;
+
+    var tabs = {
+      agua:   { pane: 'tab-agua',   btn: 'tab-agua-btn',   fab: 'btnCadastrarMobile' },
+      gas:    { pane: 'tab-gas',    btn: 'tab-gas-btn',    fab: 'btnCadastrarGasMobile' },
+      filtro: { pane: 'tab-filtro', btn: 'tab-filtro-btn', fab: 'btnCadastrarFiltroMobile' },
+    };
+
+    Object.keys(tabs).forEach(function (key) {
+      var isActive = key === activeTab;
+      var pane = document.getElementById(tabs[key].pane);
+      var btn  = document.getElementById(tabs[key].btn);
+      var fab  = document.getElementById(tabs[key].fab);
+      if (pane) {
+        pane.classList.toggle('active', isActive);
+        pane.classList.toggle('show', isActive);
+      }
+      if (btn) {
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      }
+      if (fab) fab.classList.toggle('d-none', !isActive);
+    });
+  })();
+  </script>
 
   <div class="modal fade" id="medidorModal" tabindex="-1">
     <div class="modal-dialog modal-lg modal-fullscreen-md-down">
