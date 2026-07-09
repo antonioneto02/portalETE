@@ -651,10 +651,12 @@
               const filtroRegenCount = lancamentosFiltro.filter(f => f.Tipo === 'Regeneramento').length;
               function ultimaDoTipoFiltro(tipo) {
                 const rows = lancamentosFiltro.filter(f => f.Tipo === tipo);
-                return rows.length ? rows[0].DataHora : null;
+                return rows.length ? rows[0] : null;
               }
-              const diasRetro = diasDesde(ultimaDoTipoFiltro('Retrolavagem'));
-              const diasRegen = diasDesde(ultimaDoTipoFiltro('Regeneramento'));
+              const ultimaRetro = ultimaDoTipoFiltro('Retrolavagem');
+              const ultimaRegen = ultimaDoTipoFiltro('Regeneramento');
+              const diasRetro = diasDesde(ultimaRetro && ultimaRetro.DataHora);
+              const diasRegen = diasDesde(ultimaRegen && ultimaRegen.DataHora);
             %>
             <div class="indicators-bar">
               <div class="indicator-card" style="background:linear-gradient(135deg,#16a34a,#166534);">
@@ -668,10 +670,16 @@
               <div class="indicator-card" style="background:linear-gradient(135deg,<%= diasBg(diasRetro).join(',') %>);">
                 <div class="indicator-val"><%= diasRetro!=null ? diasRetro : '—' %></div>
                 <div class="indicator-lbl">Dias s/ retrolavagem</div>
+                <div style="font-size:.68rem;opacity:.8;margin-top:2px;">
+                  <%= ultimaRetro ? fmtDateTime(ultimaRetro.DataHora) : '—' %>
+                </div>
               </div>
               <div class="indicator-card" style="background:linear-gradient(135deg,<%= diasBg(diasRegen).join(',') %>);">
                 <div class="indicator-val"><%= diasRegen!=null ? diasRegen : '—' %></div>
                 <div class="indicator-lbl">Dias s/ regeneração</div>
+                <div style="font-size:.68rem;opacity:.8;margin-top:2px;">
+                  <%= ultimaRegen && ultimaRegen.Operador ? ultimaRegen.Operador : '—' %>
+                </div>
               </div>
             </div>
             <div class="d-none d-md-block" style="overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;">
