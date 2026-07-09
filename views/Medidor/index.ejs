@@ -668,25 +668,18 @@
                 <div class="indicator-lbl">Regenerações</div>
               </div>
               <div class="indicator-card" style="background:linear-gradient(135deg,<%= diasBg(diasRetro).join(',') %>);">
-                <div class="indicator-val"><%= diasRetro!=null ? diasRetro : '—' %></div>
-                <div class="indicator-lbl">Dias s/ retrolavagem</div>
-                <div style="font-size:.68rem;opacity:.8;margin-top:2px;">
-                  <%= ultimaRetro ? fmtDateTime(ultimaRetro.DataHora) : '—' %>
-                </div>
+                <div class="indicator-val" style="font-size:1.3rem;"><%= ultimaRetro ? fmtDate(ultimaRetro.DataHora) : '—' %></div>
+                <div class="indicator-lbl">Última retrolavagem</div>
               </div>
               <div class="indicator-card" style="background:linear-gradient(135deg,<%= diasBg(diasRegen).join(',') %>);">
-                <div class="indicator-val"><%= diasRegen!=null ? diasRegen : '—' %></div>
-                <div class="indicator-lbl">Dias s/ regeneração</div>
-                <div style="font-size:.68rem;opacity:.8;margin-top:2px;">
-                  <%= ultimaRegen && ultimaRegen.Operador ? ultimaRegen.Operador : '—' %>
-                </div>
+                <div class="indicator-val" style="font-size:1.3rem;"><%= ultimaRegen && ultimaRegen.Operador ? ultimaRegen.Operador : '—' %></div>
+                <div class="indicator-lbl">Última regeneração</div>
               </div>
             </div>
             <div class="d-none d-md-block" style="overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;">
               <table id="tblFiltro" class="table table-striped table-hover dt-compact w-100">
                 <thead>
                   <tr>
-                    <th>Data/Hora</th>
                     <th>Filtro</th>
                     <th>Tipo</th>
                     <th>Operador</th>
@@ -702,7 +695,6 @@
                 <tbody>
                 <% lancamentosFiltro.forEach(function(f) { %>
                   <tr data-id="<%= f.ID %>">
-                    <td data-order="<%= f.DataHora ? new Date(f.DataHora).getTime() : 0 %>"><%= fmtDateTime(f.DataHora) %></td>
                     <td><%= f.Filtro||'—' %></td>
                     <td><%= f.Tipo||'—' %></td>
                     <td><%= f.Operador||'—' %></td>
@@ -710,7 +702,7 @@
                     <td><%= fmtNum(raw(f.Cor), 1) %></td>
                     <td><%= fmtNum(raw(f.Alcalinidade), 1) %></td>
                     <td><%= fmtNum(raw(f.Dureza), 1) %></td>
-                    <td><%= fmtDateTime(f.DataCadastro) %></td>
+                    <td data-order="<%= f.DataCadastro ? new Date(f.DataCadastro).getTime() : 0 %>"><%= fmtDateTime(f.DataCadastro) %></td>
                     <td><%= fmtDateTime(f.DataAlteracao) %></td>
                     <td class="no-export">
                       <button type="button" class="btn btn-sm btn-outline-secondary btn-edit-filtro" data-id="<%= f.ID %>" title="Editar">
@@ -743,7 +735,7 @@
                     <div class="mrc-icon"><i class="bi bi-funnel"></i></div>
                     <div class="mrc-main">
                       <div class="mrc-title"><%= f.Filtro||'—' %></div>
-                      <div class="mrc-sub"><%= fmtDateTime(f.DataHora) %> · <%= f.Tipo||'—' %> · <%= f.Operador||'—' %></div>
+                      <div class="mrc-sub"><%= fmtDateTime(f.DataCadastro) %> · <%= f.Tipo||'—' %> · <%= f.Operador||'—' %></div>
                     </div>
                     <div class="mrc-side">
                       <i class="bi bi-chevron-down mrc-chevron"></i>
@@ -1227,7 +1219,7 @@
       language: {
         url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/pt-BR.json'
       },
-      order: [[0, 'desc']],
+      order: [[7, 'desc']],
       pageLength: isMobile ? 10 : 25,
       scrollX: false,
       dom: '<"d-flex flex-wrap gap-2 align-items-center mb-2"f>rtip<"mt-1"l>',
