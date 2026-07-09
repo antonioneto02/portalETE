@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --check controllers/homeController.js)",
+      "Bash(node --check controllers/filtroController.js)",
+      "Bash(node --check routes/main.js)",
+      "Bash(node --check scripts/create-fato-lancamento-filtro.js)",
+      "Bash(node -e \"console.log\\(require.resolve\\('ejs'\\)\\)\")",
+      "Bash(node render_test.js)",
+      "Bash(node -e ' *)",
+      "Bash(node scripts/create-fato-lancamento-filtro.js)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3021/medidor)"
+    ]
+  }
+}

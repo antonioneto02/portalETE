@@ -31,6 +31,14 @@ async function renderMedidor(req, res) {
       FROM [dw].[dbo].[FATO_LANCAMENTO_GAS]
       ORDER BY [DataHora] DESC, [ID] DESC
     `);
+    const resultFiltro = await pool.request().query(`
+      SELECT TOP 500
+        [ID], [DataHora], [Operador], [Filtro], [Tipo],
+        [Turbidez], [Cor], [Alcalinidade], [Dureza],
+        [DataCadastro], [DataAlteracao]
+      FROM [dw].[dbo].[FATO_LANCAMENTO_FILTRO]
+      ORDER BY [DataHora] DESC, [ID] DESC
+    `);
     const csrfToken = generateCsrfToken(req);
     res.render('Medidor/index', {
       username: req.session.username || req.session.userId || 'Usuário',
@@ -38,6 +46,7 @@ async function renderMedidor(req, res) {
       currentPath: '/medidor',
       lancamentos: result.recordset,
       lancamentosGas: resultGas.recordset,
+      lancamentosFiltro: resultFiltro.recordset,
       csrfToken,
       dbError: null,
     });
@@ -50,6 +59,7 @@ async function renderMedidor(req, res) {
       currentPath: '/medidor',
       lancamentos: [],
       lancamentosGas: [],
+      lancamentosFiltro: [],
       csrfToken,
       dbError: 'Não foi possível carregar os dados. Tente novamente.',
     });

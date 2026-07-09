@@ -2,22 +2,6 @@ const { getPool } = require('../database/dbConfig');
 
 const TURNO = { 1: 'Manhã', 2: 'Tarde', 3: 'Noite' };
 
-function adaptDiv(v) {
-  if (v == null) return null;
-  if (v >= 100) return v / 100;
-  if (v >= 10)  return v / 10;
-  return v;
-}
-
-// Registros antigos foram gravados com escala x100/x10 (bug já corrigido); esta heurística
-// só é aplicada a pH/Turbidez/Ferro/Cloro, cujo range real nunca atinge esses patamares.
-const sqlAdapt = col =>
-  `CASE WHEN ${col}>=100 THEN ${col}/100.0 WHEN ${col}>=10 THEN ${col}/10.0 ELSE CAST(${col} AS FLOAT) END`;
-
-const sqlAvgNN = col => `AVG(NULLIF(${sqlAdapt(col)}, 0))`;
-
-// Alcalinidade/Dureza/Cor_Visual podem legitimamente ultrapassar 10/100 em leituras reais,
-// então usam o valor bruto (sem a heurística de escala).
 const sqlAvgRawNN = col => `AVG(NULLIF(CAST(${col} AS FLOAT), 0))`;
 
 async function renderHome(req, res) {
@@ -36,11 +20,11 @@ async function renderHome(req, res) {
           COUNT(*)                       AS qtd,
           COUNT(DISTINCT [LOCAL])        AS locais,
           COUNT(DISTINCT [turno])        AS turnos,
-          ${sqlAvgNN('[pH]')}            AS pH,
-          ${sqlAvgNN('[Turbidez]')}      AS Turbidez,
-          ${sqlAvgNN('[Ferro]')}         AS Ferro,
+          ${sqlAvgRawNN('[pH]')}         AS pH,
+          ${sqlAvgRawNN('[Turbidez]')}   AS Turbidez,
+          ${sqlAvgRawNN('[Ferro]')}      AS Ferro,
           ${sqlAvgRawNN('[Cor_Visual]')} AS Cor,
-          ${sqlAvgNN('[Cloro]')}         AS Cloro,
+          ${sqlAvgRawNN('[Cloro]')}      AS Cloro,
           ${sqlAvgRawNN('[Alcalinidade]')} AS Alcalinidade,
           ${sqlAvgRawNN('[Dureza]')}     AS Dureza
         FROM [dw].[dbo].[FATO_LANCAMENTO_ETA]
@@ -55,10 +39,10 @@ async function renderHome(req, res) {
       pool.request().query(`
         SELECT TOP 30
           CONVERT(VARCHAR(10),[Data],23) AS dia,
-          AVG(${sqlAdapt('[pH]')})       AS ph,
-          ${sqlAvgNN('[Turbidez]')}      AS turbidez,
+          ${sqlAvgRawNN('[pH]')}         AS ph,
+          ${sqlAvgRawNN('[Turbidez]')}   AS turbidez,
           ${sqlAvgRawNN('[Cor_Visual]')} AS cor,
-          ${sqlAvgNN('[Ferro]')}         AS ferro,
+          ${sqlAvgRawNN('[Ferro]')}      AS ferro,
           COUNT(*)                       AS registros
         FROM [dw].[dbo].[FATO_LANCAMENTO_ETA]
         WHERE [pH] IS NOT NULL AND [pH] > 0
@@ -80,40 +64,40 @@ async function renderHome(req, res) {
       pool.request().query(`
         SELECT
           CASE
-            WHEN ${sqlAdapt('[pH]')} < 6.5  THEN '< 6,5'
-            WHEN ${sqlAdapt('[pH]')} < 7.0  THEN '6,5–7,0'
-            WHEN ${sqlAdapt('[pH]')} < 7.5  THEN '7,0–7,5'
-            WHEN ${sqlAdapt('[pH]')} < 8.0  THEN '7,5–8,0'
-            WHEN ${sqlAdapt('[pH]')} < 8.5  THEN '8,0–8,5'
-            WHEN ${sqlAdapt('[pH]')} <= 9.5 THEN '8,5–9,5'
+            WHEN CAST([pH] AS FLOAT) < 6.5  THEN '< 6,5'
+            WHEN CAST([pH] AS FLOAT) < 7.0  THEN '6,5–7,0'
+            WHEN CAST([pH] AS FLOAT) < 7.5  THEN '7,0–7,5'
+            WHEN CAST([pH] AS FLOAT) < 8.0  THEN '7,5–8,0'
+            WHEN CAST([pH] AS FLOAT) < 8.5  THEN '8,0–8,5'
+            WHEN CAST([pH] AS FLOAT) <= 9.5 THEN '8,5–9,5'
             ELSE '> 9,5'
           END AS faixa,
           COUNT(*) AS total,
-          MIN(${sqlAdapt('[pH]')}) AS ordem
+          MIN(CAST([pH] AS FLOAT)) AS ordem
         FROM [dw].[dbo].[FATO_LANCAMENTO_ETA]
         WHERE [pH] IS NOT NULL AND [pH] > 0
         GROUP BY
           CASE
-            WHEN ${sqlAdapt('[pH]')} < 6.5  THEN '< 6,5'
-            WHEN ${sqlAdapt('[pH]')} < 7.0  THEN '6,5–7,0'
-            WHEN ${sqlAdapt('[pH]')} < 7.5  THEN '7,0–7,5'
-            WHEN ${sqlAdapt('[pH]')} < 8.0  THEN '7,5–8,0'
-            WHEN ${sqlAdapt('[pH]')} < 8.5  THEN '8,0–8,5'
-            WHEN ${sqlAdapt('[pH]')} <= 9.5 THEN '8,5–9,5'
+            WHEN CAST([pH] AS FLOAT) < 6.5  THEN '< 6,5'
+            WHEN CAST([pH] AS FLOAT) < 7.0  THEN '6,5–7,0'
+            WHEN CAST([pH] AS FLOAT) < 7.5  THEN '7,0–7,5'
+            WHEN CAST([pH] AS FLOAT) < 8.0  THEN '7,5–8,0'
+            WHEN CAST([pH] AS FLOAT) < 8.5  THEN '8,0–8,5'
+            WHEN CAST([pH] AS FLOAT) <= 9.5 THEN '8,5–9,5'
             ELSE '> 9,5'
           END
-        ORDER BY MIN(${sqlAdapt('[pH]')})
+        ORDER BY MIN(CAST([pH] AS FLOAT))
       `),
 
       pool.request().query(`SELECT COUNT(*) AS total FROM [dw].[dbo].[FATO_LANCAMENTO_ETA]`),
 
       pool.request().query(`
         SELECT
-          CAST(100.0*SUM(CASE WHEN ${sqlAdapt('[pH]')} BETWEEN 6.5 AND 9.5 THEN 1 ELSE 0 END)
+          CAST(100.0*SUM(CASE WHEN CAST([pH] AS FLOAT) BETWEEN 6.5 AND 9.5 THEN 1 ELSE 0 END)
             / NULLIF(COUNT(NULLIF([pH],0)),0) AS DECIMAL(5,1)) AS ph_conf,
-          CAST(100.0*SUM(CASE WHEN ${sqlAdapt('[Turbidez]')} BETWEEN 0.001 AND 1.0 THEN 1 ELSE 0 END)
+          CAST(100.0*SUM(CASE WHEN CAST([Turbidez] AS FLOAT) BETWEEN 0.001 AND 1.0 THEN 1 ELSE 0 END)
             / NULLIF(COUNT(NULLIF([Turbidez],0)),0) AS DECIMAL(5,1)) AS turb_conf,
-          CAST(100.0*SUM(CASE WHEN ${sqlAdapt('[Ferro]')} > 0 AND ${sqlAdapt('[Ferro]')} <= 0.3 THEN 1 ELSE 0 END)
+          CAST(100.0*SUM(CASE WHEN CAST([Ferro] AS FLOAT) > 0 AND CAST([Ferro] AS FLOAT) <= 0.3 THEN 1 ELSE 0 END)
             / NULLIF(COUNT(NULLIF([Ferro],0)),0) AS DECIMAL(5,1)) AS ferro_conf
         FROM [dw].[dbo].[FATO_LANCAMENTO_ETA]
         WHERE [pH] IS NOT NULL AND [pH] > 0

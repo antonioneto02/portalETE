@@ -231,6 +231,11 @@
               <i class="bi bi-cloud-fog2 me-1"></i>Gás
             </button>
           </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-filtro-btn" data-bs-toggle="tab" data-bs-target="#tab-filtro" type="button" role="tab" aria-controls="tab-filtro" aria-selected="false">
+              <i class="bi bi-funnel me-1"></i>Filtros
+            </button>
+          </li>
         </ul>
 
         <div class="tab-content" id="medidorTabsContent">
@@ -245,16 +250,6 @@
           </div>
           <div class="card-body p-0 p-md-3">
             <%
-              // Registros antigos foram gravados com escala x100/x10 (bug já corrigido);
-              // esta heurística só é aplicada a pH/Cloro/Turbidez/Ferro, cujo range real nunca
-              // atinge esses patamares, para manter a leitura correta do histórico.
-              function adaptLegacy(v) {
-                if(v==null||v==='') return null;
-                const n = Number(v);
-                if(n>=100) return n/100;
-                if(n>=10)  return n/10;
-                return n;
-              }
               function raw(v) {
                 if(v==null||v==='') return null;
                 return Number(v);
@@ -262,7 +257,6 @@
               function fmtNum(n, decimals) {
                 return n==null?'—':n.toLocaleString('pt-BR',{minimumFractionDigits:decimals||2,maximumFractionDigits:decimals||2});
               }
-              function fmt(v)    { return fmtNum(adaptLegacy(v)); }
               function fmtRaw(v) { return fmtNum(raw(v)); }
               function fmtDate(d) {
                 if(!d) return '—';
@@ -289,8 +283,8 @@
               }
               function overallStatus(l) {
                 const classes = [
-                  cls(adaptLegacy(l.pH),6.5,9.5), cls(adaptLegacy(l.Cloro),0.2,5.0), cls(adaptLegacy(l.Turbidez),0,1.0),
-                  cls(adaptLegacy(l.Ferro),0,0.3), cls(raw(l.Cor_Visual),0,15),
+                  cls(raw(l.pH),6.5,9.5), cls(raw(l.Cloro),0.2,5.0), cls(raw(l.Turbidez),0,1.0),
+                  cls(raw(l.Ferro),0,0.3), cls(raw(l.Cor_Visual),0,15),
                 ].filter(Boolean);
                 if (!classes.length) return 'none';
                 if (classes.includes('val-bad'))  return 'bad';
@@ -343,11 +337,11 @@
                     <td><%= l.LOCAL||'—' %></td>
                     <td><%= l.Aspecto_Visual||'—' %></td>
                     <td class="<%= cls(raw(l.Cor_Visual),0,15) %>"><%= fmtRaw(l.Cor_Visual) %></td>
-                    <td class="<%= cls(adaptLegacy(l.pH),6.5,9.5) %>"><%= fmt(l.pH) %></td>
-                    <td class="<%= cls(adaptLegacy(l.Cloro),0.2,5.0) %>"><%= fmt(l.Cloro) %></td>
-                    <td class="<%= cls(adaptLegacy(l.Turbidez),0,1.0) %>"><%= fmt(l.Turbidez) %></td>
+                    <td class="<%= cls(raw(l.pH),6.5,9.5) %>"><%= fmtRaw(l.pH) %></td>
+                    <td class="<%= cls(raw(l.Cloro),0.2,5.0) %>"><%= fmtRaw(l.Cloro) %></td>
+                    <td class="<%= cls(raw(l.Turbidez),0,1.0) %>"><%= fmtRaw(l.Turbidez) %></td>
                     <td><%= fmtRaw(l.Alcalinidade) %></td>
-                    <td class="<%= cls(adaptLegacy(l.Ferro),0,0.3) %>"><%= fmt(l.Ferro) %></td>
+                    <td class="<%= cls(raw(l.Ferro),0,0.3) %>"><%= fmtRaw(l.Ferro) %></td>
                     <td><%= fmtRaw(l.Dureza) %></td>
                     <td><%= fmtRaw(l.Condutividade) %></td>
                     <td><%= fmtInt(l.Inicial) %></td>
@@ -418,11 +412,11 @@
                     <div class="mrc-grid">
                       <div class="mrc-item"><span class="mrc-lbl">Aspecto Visual</span><span class="mrc-val"><%= l.Aspecto_Visual||'—' %></span></div>
                       <div class="mrc-item"><span class="mrc-lbl">Cor (uH)</span><span class="mrc-val"><%= fmtRaw(l.Cor_Visual) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">pH</span><span class="mrc-val"><%= fmt(l.pH) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Cloro (mg/L)</span><span class="mrc-val"><%= fmt(l.Cloro) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Turbidez (uT)</span><span class="mrc-val"><%= fmt(l.Turbidez) %></span></div>
+                      <div class="mrc-item"><span class="mrc-lbl">pH</span><span class="mrc-val"><%= fmtRaw(l.pH) %></span></div>
+                      <div class="mrc-item"><span class="mrc-lbl">Cloro (mg/L)</span><span class="mrc-val"><%= fmtRaw(l.Cloro) %></span></div>
+                      <div class="mrc-item"><span class="mrc-lbl">Turbidez (uT)</span><span class="mrc-val"><%= fmtRaw(l.Turbidez) %></span></div>
                       <div class="mrc-item"><span class="mrc-lbl">Alcalinidade</span><span class="mrc-val"><%= fmtRaw(l.Alcalinidade) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Ferro (mg/L)</span><span class="mrc-val"><%= fmt(l.Ferro) %></span></div>
+                      <div class="mrc-item"><span class="mrc-lbl">Ferro (mg/L)</span><span class="mrc-val"><%= fmtRaw(l.Ferro) %></span></div>
                       <div class="mrc-item"><span class="mrc-lbl">Dureza</span><span class="mrc-val"><%= fmtRaw(l.Dureza) %></span></div>
                       <div class="mrc-item"><span class="mrc-lbl">Condutividade</span><span class="mrc-val"><%= fmtRaw(l.Condutividade) %></span></div>
                     </div>
@@ -561,6 +555,116 @@
         </div>
         </div>
 
+        <div class="tab-pane fade" id="tab-filtro" role="tabpanel" aria-labelledby="tab-filtro-btn">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span><i class="bi bi-funnel me-2"></i>Lançamentos Filtros</span>
+            <button class="btn btn-sm d-none d-md-inline-flex" id="btnCadastrarFiltro"
+              style="background:linear-gradient(135deg,#2B286F,#4a47a3);color:white;border:none;">
+              <i class="bi bi-plus-lg me-1"></i>Leitura
+            </button>
+          </div>
+          <div class="card-body p-0 p-md-3">
+            <div class="d-none d-md-block" style="overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;">
+              <table id="tblFiltro" class="table table-striped table-hover dt-compact w-100">
+                <thead>
+                  <tr>
+                    <th>Data/Hora</th>
+                    <th>Filtro</th>
+                    <th>Tipo</th>
+                    <th>Operador</th>
+                    <th>Turbidez</th>
+                    <th>Cor</th>
+                    <th>Alcalinidade</th>
+                    <th>Dureza</th>
+                    <th>Cadastro</th>
+                    <th>Alteração</th>
+                    <th class="no-export">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                <% lancamentosFiltro.forEach(function(f) { %>
+                  <tr data-id="<%= f.ID %>">
+                    <td data-order="<%= f.DataHora ? new Date(f.DataHora).getTime() : 0 %>"><%= fmtDateTime(f.DataHora) %></td>
+                    <td><%= f.Filtro||'—' %></td>
+                    <td><%= f.Tipo||'—' %></td>
+                    <td><%= f.Operador||'—' %></td>
+                    <td><%= fmtNum(raw(f.Turbidez), 2) %></td>
+                    <td><%= fmtNum(raw(f.Cor), 1) %></td>
+                    <td><%= fmtNum(raw(f.Alcalinidade), 1) %></td>
+                    <td><%= fmtNum(raw(f.Dureza), 1) %></td>
+                    <td><%= fmtDateTime(f.DataCadastro) %></td>
+                    <td><%= fmtDateTime(f.DataAlteracao) %></td>
+                    <td class="no-export">
+                      <button type="button" class="btn btn-sm btn-outline-secondary btn-edit-filtro" data-id="<%= f.ID %>" title="Editar">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                    </td>
+                  </tr>
+                <% }); %>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="d-block d-md-none p-3" id="mobileCardListFiltro">
+              <div class="mob-toolbar">
+                <div class="mob-search">
+                  <i class="bi bi-search"></i>
+                  <input type="text" id="mobileSearchInputFiltro" placeholder="Buscar filtro, operador...">
+                </div>
+              </div>
+
+              <% if (!lancamentosFiltro.length) { %>
+                <div class="mrc-empty"><i class="bi bi-inbox d-block mb-2" style="font-size:1.6rem;"></i>Nenhum lançamento encontrado.</div>
+              <% } %>
+
+              <% lancamentosFiltro.forEach(function(f) {
+                const searchStr = ((f.Filtro||'') + ' ' + (f.Tipo||'') + ' ' + (f.Operador||'')).toLowerCase();
+              %>
+                <div class="mobile-reg-card" data-search="<%= searchStr %>" data-id="<%= f.ID %>">
+                  <div class="mrc-row">
+                    <div class="mrc-icon"><i class="bi bi-funnel"></i></div>
+                    <div class="mrc-main">
+                      <div class="mrc-title"><%= f.Filtro||'—' %></div>
+                      <div class="mrc-sub"><%= fmtDateTime(f.DataHora) %> · <%= f.Tipo||'—' %> · <%= f.Operador||'—' %></div>
+                    </div>
+                    <div class="mrc-side">
+                      <i class="bi bi-chevron-down mrc-chevron"></i>
+                    </div>
+                  </div>
+                  <div class="mrc-details">
+                    <div class="mrc-subhead">Parâmetros Medidos</div>
+                    <div class="mrc-grid">
+                      <% if (f.Tipo === 'Retrolavagem') { %>
+                        <div class="mrc-item"><span class="mrc-lbl">Turbidez</span><span class="mrc-val"><%= fmtNum(raw(f.Turbidez), 2) %></span></div>
+                        <div class="mrc-item"><span class="mrc-lbl">Cor</span><span class="mrc-val"><%= fmtNum(raw(f.Cor), 1) %></span></div>
+                      <% } else { %>
+                        <div class="mrc-item"><span class="mrc-lbl">Alcalinidade</span><span class="mrc-val"><%= fmtNum(raw(f.Alcalinidade), 1) %></span></div>
+                        <div class="mrc-item"><span class="mrc-lbl">Dureza</span><span class="mrc-val"><%= fmtNum(raw(f.Dureza), 1) %></span></div>
+                      <% } %>
+                    </div>
+                    <div class="mrc-subhead">Registro</div>
+                    <div class="mrc-grid">
+                      <div class="mrc-item"><span class="mrc-lbl">Cadastro</span><span class="mrc-val"><%= fmtDateTime(f.DataCadastro) %></span></div>
+                      <div class="mrc-item"><span class="mrc-lbl">Alteração</span><span class="mrc-val"><%= fmtDateTime(f.DataAlteracao) %></span></div>
+                    </div>
+                    <div style="margin-top:10px;">
+                      <button type="button" class="btn btn-sm btn-outline-secondary btn-edit-filtro" data-id="<%= f.ID %>" style="width:100%;">
+                        <i class="bi bi-pencil me-1"></i>Editar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              <% }); %>
+
+              <div class="mrc-empty" id="mobileEmptyMsgFiltro" style="display:none;">
+                <i class="bi bi-search d-block mb-2" style="font-size:1.6rem;"></i>Nenhum resultado encontrado.
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+
         </div>
       </div>
     </div>
@@ -570,6 +674,9 @@
     <i class="bi bi-plus-lg"></i>
   </button>
   <button type="button" class="mob-fab d-md-none d-none" id="btnCadastrarGasMobile" aria-label="Cadastrar nova leitura de gás">
+    <i class="bi bi-plus-lg"></i>
+  </button>
+  <button type="button" class="mob-fab d-md-none d-none" id="btnCadastrarFiltroMobile" aria-label="Cadastrar nova leitura de filtro">
     <i class="bi bi-plus-lg"></i>
   </button>
 
@@ -829,6 +936,89 @@
       </div>
     </div>
   </div>
+
+  <div class="modal fade" id="filtroModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-fullscreen-md-down">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="filtroModalTitle"><i class="bi bi-plus-circle me-2"></i>Nova Leitura de Filtro</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formFiltro" novalidate>
+            <input type="hidden" name="_csrf" id="csrfInputFiltro" value="<%= csrfToken %>">
+            <input type="hidden" name="ID" id="fltId" value="">
+            <div class="form-section">
+              <div class="form-section-title"><i class="bi bi-funnel"></i>Leitura de Filtro</div>
+              <div class="row g-2">
+                <div class="col-6 col-md-4 param-pair">
+                  <label for="fltDataHora">Data/Hora <span class="req">*</span></label>
+                  <input type="datetime-local" class="form-control" id="fltDataHora" name="DataHora" required>
+                </div>
+                <div class="col-6 col-md-4 param-pair">
+                  <label for="fltFiltro">Filtro <span class="req">*</span></label>
+                  <select class="form-control" id="fltFiltro" name="Filtro" required>
+                    <option value="">— Selecione —</option>
+                    <option>Areia Novo</option>
+                    <option>Areia</option>
+                    <option>Abrandador VEXER</option>
+                    <option>Abrandador</option>
+                  </select>
+                </div>
+                <div class="col-6 col-md-4 param-pair">
+                  <label for="fltTipo">Tipo</label>
+                  <input type="text" class="form-control" id="fltTipo" name="Tipo" readonly
+                    placeholder="Auto"
+                    style="background:#f3f4f6;cursor:not-allowed;color:#6b7280;">
+                </div>
+                <div class="col-12 col-md-4 param-pair">
+                  <label for="fltOperador">Operador</label>
+                  <select class="form-control" id="fltOperador" name="Operador"></select>
+                </div>
+              </div>
+            </div>
+            <div class="form-section" id="filtroGroupRetro" style="display:none;">
+              <div class="form-section-title"><i class="bi bi-droplet-half"></i>Retrolavagem</div>
+              <div class="row g-2">
+                <div class="col-6 col-md-4 param-pair">
+                  <label for="fltTurb">Turbidez <span style="color:#9ca3af;font-weight:400">(uT)</span></label>
+                  <input type="text" inputmode="decimal" class="form-control input-decimal" id="fltTurb" name="Turbidez" data-decimals="2" placeholder="0,00">
+                </div>
+                <div class="col-6 col-md-4 param-pair">
+                  <label for="fltCor">Cor <span style="color:#9ca3af;font-weight:400">(uH)</span></label>
+                  <input type="text" inputmode="decimal" class="form-control input-decimal" id="fltCor" name="Cor" data-decimals="1" placeholder="0,0">
+                </div>
+              </div>
+            </div>
+            <div class="form-section" id="filtroGroupRegen" style="display:none;">
+              <div class="form-section-title"><i class="bi bi-droplet-half"></i>Regeneramento</div>
+              <div class="row g-2">
+                <div class="col-6 col-md-4 param-pair">
+                  <label for="fltAlc">Alcalinidade <span style="color:#9ca3af;font-weight:400">(mg/L)</span></label>
+                  <input type="text" inputmode="decimal" class="form-control input-decimal" id="fltAlc" name="Alcalinidade" data-decimals="1" placeholder="0,0">
+                </div>
+                <div class="col-6 col-md-4 param-pair">
+                  <label for="fltDureza">Dureza <span style="color:#9ca3af;font-weight:400">(mg/L)</span></label>
+                  <input type="text" inputmode="decimal" class="form-control input-decimal" id="fltDureza" name="Dureza" data-decimals="1" placeholder="0,0">
+                </div>
+              </div>
+            </div>
+            <div id="formAlertFiltro" class="alert mt-2" style="display:none;"></div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnCancelarFiltro">Cancelar</button>
+          <button type="button" class="btn" id="btnSalvarFiltro"
+            style="background:linear-gradient(135deg,#2B286F,#4a47a3);color:white;border:none;min-width:110px;">
+            <span id="btnSalvarFiltroTxt"><i class="bi bi-check-lg me-1"></i>Salvar</span>
+            <span id="btnSalvarFiltroLoad" style="display:none;">
+              <span class="spinner-border spinner-border-sm me-1"></span>Salvando...
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
   const lancamentosData = {};
@@ -836,6 +1026,16 @@
 
   const lancamentosGasData = {};
   <%- JSON.stringify(lancamentosGas) %>.forEach(function (g) { lancamentosGasData[g.ID] = g; });
+
+  const lancamentosFiltroData = {};
+  <%- JSON.stringify(lancamentosFiltro) %>.forEach(function (f) { lancamentosFiltroData[f.ID] = f; });
+
+  const FILTRO_TIPO_MAP = {
+    'Areia Novo':       'Retrolavagem',
+    'Areia':            'Retrolavagem',
+    'Abrandador VEXER': 'Regeneramento',
+    'Abrandador':       'Regeneramento',
+  };
 
   function maskDecimalInput(el) {
     const decimals = parseInt(el.dataset.decimals || '2', 10);
@@ -852,16 +1052,10 @@
     if (!v) return '';
     return v.replace(/\./g, '').replace(',', '.');
   }
-  function adaptLegacyJs(v) {
-    if (v == null || v === '') return null;
-    const n = Number(v);
-    if (n >= 100) return n / 100;
-    if (n >= 10)  return n / 10;
-    return n;
-  }
-  function fmtDecimalInput(v) {
+  function fmtDecimalInput(v, decimals) {
     if (v == null || v === '') return '';
-    return Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const d = decimals != null ? decimals : 2;
+    return Number(v).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
   }
   function toDatetimeLocalValue(v) {
     if (!v) return '';
@@ -910,20 +1104,40 @@
       dom: '<"d-flex flex-wrap gap-2 align-items-center mb-2"f>rtip<"mt-1"l>',
     });
 
-    document.getElementById('tab-agua-btn').addEventListener('shown.bs.tab', function () {
-      document.getElementById('btnCadastrarMobile').classList.remove('d-none');
+    const tblFiltroInstance = $('#tblFiltro').DataTable({
+      language: {
+        url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/pt-BR.json'
+      },
+      order: [[0, 'desc']],
+      pageLength: isMobile ? 10 : 25,
+      scrollX: false,
+      dom: '<"d-flex flex-wrap gap-2 align-items-center mb-2"f>rtip<"mt-1"l>',
+    });
+
+    function setFabVisibility(activeTab) {
+      document.getElementById('btnCadastrarMobile').classList.toggle('d-none', activeTab !== 'agua');
       const gasFab = document.getElementById('btnCadastrarGasMobile');
-      if (gasFab) gasFab.classList.add('d-none');
+      if (gasFab) gasFab.classList.toggle('d-none', activeTab !== 'gas');
+      const filtroFab = document.getElementById('btnCadastrarFiltroMobile');
+      if (filtroFab) filtroFab.classList.toggle('d-none', activeTab !== 'filtro');
+    }
+    document.getElementById('tab-agua-btn').addEventListener('shown.bs.tab', function () {
+      setFabVisibility('agua');
     });
     document.getElementById('tab-gas-btn').addEventListener('shown.bs.tab', function () {
-      document.getElementById('btnCadastrarMobile').classList.add('d-none');
-      const gasFab = document.getElementById('btnCadastrarGasMobile');
-      if (gasFab) gasFab.classList.remove('d-none');
+      setFabVisibility('gas');
       tblGasInstance.columns.adjust();
+    });
+    document.getElementById('tab-filtro-btn').addEventListener('shown.bs.tab', function () {
+      setFabVisibility('filtro');
+      tblFiltroInstance.columns.adjust();
     });
 
     if (window.location.hash === '#tab-gas') {
       bootstrap.Tab.getOrCreateInstance(document.getElementById('tab-gas-btn')).show();
+    }
+    if (window.location.hash === '#tab-filtro') {
+      bootstrap.Tab.getOrCreateInstance(document.getElementById('tab-filtro-btn')).show();
     }
 
     (function initMobileCardList() {
@@ -998,6 +1212,28 @@
       if (mobileSearchInput) mobileSearchInput.addEventListener('input', applyFilters);
     })();
 
+    (function initMobileCardListFiltro() {
+      const container = document.getElementById('mobileCardListFiltro');
+      if (!container) return;
+      const mobileSearchInput = document.getElementById('mobileSearchInputFiltro');
+      const cards = container.querySelectorAll('.mobile-reg-card');
+      const emptyMsg = document.getElementById('mobileEmptyMsgFiltro');
+      if (!cards.length) return;
+
+      function applyFilters() {
+        const term = mobileSearchInput ? mobileSearchInput.value.trim().toLowerCase() : '';
+        let visibleCount = 0;
+        cards.forEach(function (card) {
+          const show = !term || card.dataset.search.includes(term);
+          card.style.display = show ? '' : 'none';
+          if (show) visibleCount++;
+        });
+        if (emptyMsg) emptyMsg.style.display = visibleCount ? 'none' : 'block';
+      }
+
+      if (mobileSearchInput) mobileSearchInput.addEventListener('input', applyFilters);
+    })();
+
     const s2opts = { dropdownParent: $('#medidorModal'), allowClear: true, width: '100%' };
     $('#fTurno').select2({ ...s2opts, placeholder: '— Selecione —' });
     $('#fAspecto').select2({ ...s2opts, placeholder: '— Selecione —' });
@@ -1049,10 +1285,31 @@
       document.getElementById('fMatricula').value = '';
     });
 
+    const s2optsFiltro = { dropdownParent: $('#filtroModal'), allowClear: true, width: '100%' };
+    $('#fltFiltro').select2({ ...s2optsFiltro, placeholder: '— Selecione —' });
+    $('#fltOperador').select2({
+      dropdownParent: $('#filtroModal'),
+      placeholder: 'Digite o nome do operador...',
+      allowClear: true,
+      width: '100%',
+      minimumInputLength: 2,
+      language: { inputTooShort: () => 'Digite ao menos 2 caracteres...' },
+      ajax: {
+        url: '/api/operadores',
+        dataType: 'json',
+        delay: 280,
+        data: p => ({ q: p.term || '' }),
+        processResults: d => ({ results: d }),
+        cache: true,
+      },
+    });
+    $('#fltFiltro').on('change', function () { updateFiltroTipo(); });
+
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('fData').value = today;
     const modal = new bootstrap.Modal(document.getElementById('medidorModal'));
     const gasModal = new bootstrap.Modal(document.getElementById('gasModal'));
+    const filtroModal = new bootstrap.Modal(document.getElementById('filtroModal'));
     const modalConfirma = new bootstrap.Modal(document.getElementById('modalConfirmaCancelar'));
     document.getElementById('medidorModal').addEventListener('hide.bs.modal', () => {
       if (document.activeElement && document.getElementById('medidorModal').contains(document.activeElement)) {
@@ -1061,6 +1318,11 @@
     });
     document.getElementById('gasModal').addEventListener('hide.bs.modal', () => {
       if (document.activeElement && document.getElementById('gasModal').contains(document.activeElement)) {
+        document.activeElement.blur();
+      }
+    });
+    document.getElementById('filtroModal').addEventListener('hide.bs.modal', () => {
+      if (document.activeElement && document.getElementById('filtroModal').contains(document.activeElement)) {
         document.activeElement.blur();
       }
     });
@@ -1143,6 +1405,29 @@
       });
     }
 
+    function updateFiltroTipo() {
+      const filtro = $('#fltFiltro').val();
+      const tipo = FILTRO_TIPO_MAP[filtro] || '';
+      document.getElementById('fltTipo').value = tipo;
+
+      const retroGroup = document.getElementById('filtroGroupRetro');
+      const regenGroup = document.getElementById('filtroGroupRegen');
+      const showRetro = tipo === 'Retrolavagem';
+      const showRegen = tipo === 'Regeneramento';
+
+      retroGroup.style.display = showRetro ? '' : 'none';
+      regenGroup.style.display = showRegen ? '' : 'none';
+
+      if (!showRetro) {
+        document.getElementById('fltTurb').value = '';
+        document.getElementById('fltCor').value = '';
+      }
+      if (!showRegen) {
+        document.getElementById('fltAlc').value = '';
+        document.getElementById('fltDureza').value = '';
+      }
+    }
+
     function resetFormToCreate() {
       const form = document.getElementById('formMedidor');
       form.reset();
@@ -1186,11 +1471,11 @@
       }
 
       document.getElementById('fCorVis').value        = fmtDecimalInput(l.Cor_Visual);
-      document.getElementById('fpH').value             = fmtDecimalInput(adaptLegacyJs(l.pH));
-      document.getElementById('fCloro').value          = fmtDecimalInput(adaptLegacyJs(l.Cloro));
-      document.getElementById('fTurb').value           = fmtDecimalInput(adaptLegacyJs(l.Turbidez));
+      document.getElementById('fpH').value             = fmtDecimalInput(l.pH);
+      document.getElementById('fCloro').value          = fmtDecimalInput(l.Cloro);
+      document.getElementById('fTurb').value           = fmtDecimalInput(l.Turbidez);
       document.getElementById('fAlc').value            = fmtDecimalInput(l.Alcalinidade);
-      document.getElementById('fFerro').value          = fmtDecimalInput(adaptLegacyJs(l.Ferro));
+      document.getElementById('fFerro').value          = fmtDecimalInput(l.Ferro);
       document.getElementById('fDureza').value         = fmtDecimalInput(l.Dureza);
       document.getElementById('fCondutividade').value  = fmtDecimalInput(l.Condutividade);
 
@@ -1251,6 +1536,47 @@
       btnCadastrarGasMobile.addEventListener('click', () => { resetGasFormToCreate(); gasModal.show(); });
     }
 
+    function resetFiltroFormToCreate() {
+      const form = document.getElementById('formFiltro');
+      form.reset();
+      document.getElementById('fltId').value = '';
+      document.getElementById('filtroModalTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i>Nova Leitura de Filtro';
+      $('#fltFiltro').val('').trigger('change');
+      $('#fltOperador').val(null).trigger('change');
+    }
+
+    function openFiltroForEdit(id) {
+      const f = lancamentosFiltroData[id];
+      if (!f) return;
+
+      resetFiltroFormToCreate();
+      document.getElementById('fltId').value = id;
+      document.getElementById('filtroModalTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i>Editar Leitura de Filtro';
+
+      document.getElementById('fltDataHora').value = toDatetimeLocalValue(f.DataHora);
+      $('#fltFiltro').val(f.Filtro || '').trigger('change');
+      if (f.Operador) {
+        const opt = new Option(f.Operador, f.Operador, true, true);
+        $('#fltOperador').append(opt).trigger('change');
+      }
+      document.getElementById('fltTurb').value    = fmtDecimalInput(f.Turbidez, 2);
+      document.getElementById('fltCor').value     = fmtDecimalInput(f.Cor, 1);
+      document.getElementById('fltAlc').value     = fmtDecimalInput(f.Alcalinidade, 1);
+      document.getElementById('fltDureza').value  = fmtDecimalInput(f.Dureza, 1);
+
+      filtroModal.show();
+    }
+
+    document.querySelectorAll('.btn-edit-filtro').forEach(function (btn) {
+      btn.addEventListener('click', function () { openFiltroForEdit(btn.dataset.id); });
+    });
+
+    document.getElementById('btnCadastrarFiltro').addEventListener('click', () => { resetFiltroFormToCreate(); filtroModal.show(); });
+    const btnCadastrarFiltroMobile = document.getElementById('btnCadastrarFiltroMobile');
+    if (btnCadastrarFiltroMobile) {
+      btnCadastrarFiltroMobile.addEventListener('click', () => { resetFiltroFormToCreate(); filtroModal.show(); });
+    }
+
     let pendingModalToClose = null;
     function wireCancelConfirm(btnId, formId, modalInstance) {
       document.getElementById(btnId).addEventListener('click', function() {
@@ -1268,12 +1594,19 @@
     }
     wireCancelConfirm('btnCancelar', 'formMedidor', modal);
     wireCancelConfirm('btnCancelarGas', 'formGas', gasModal);
+    wireCancelConfirm('btnCancelarFiltro', 'formFiltro', filtroModal);
 
     document.getElementById('btnVoltarForm').addEventListener('click', () => modalConfirma.hide());
     document.getElementById('btnConfirmarSair').addEventListener('click', function() {
       modalConfirma.hide();
       if (pendingModalToClose) pendingModalToClose.hide();
     });
+
+    function syncAllCsrfInputs(token) {
+      document.getElementById('csrfInput').value = token;
+      document.getElementById('csrfInputGas').value = token;
+      document.getElementById('csrfInputFiltro').value = token;
+    }
 
     document.getElementById('btnSalvar').addEventListener('click', async function () {
       const form = document.getElementById('formMedidor');
@@ -1289,7 +1622,7 @@
       const editId = document.getElementById('fId').value;
       const body = {};
       new FormData(form).forEach((v, k) => { body[k] = v; });
-      document.querySelectorAll('.input-decimal').forEach(el => {
+      form.querySelectorAll('.input-decimal').forEach(el => {
         body[el.name] = decimalToFloatStr(body[el.name]);
       });
 
@@ -1305,8 +1638,7 @@
         if (json.success) {
           showAlert(editId ? 'Lançamento atualizado com sucesso!' : 'Lançamento salvo com sucesso!', 'success');
           if (json.csrfToken) {
-            document.getElementById('csrfInput').value = json.csrfToken;
-            document.getElementById('csrfInputGas').value = json.csrfToken;
+            syncAllCsrfInputs(json.csrfToken);
           }
           resetFormToCreate();
           setTimeout(() => { modal.hide(); location.hash = 'tab-agua'; location.reload(); }, 1200);
@@ -1361,8 +1693,7 @@
         if (json.success) {
           showAlertGas(editId ? 'Leitura atualizada com sucesso!' : 'Leitura salva com sucesso!', 'success');
           if (json.csrfToken) {
-            document.getElementById('csrfInput').value = json.csrfToken;
-            document.getElementById('csrfInputGas').value = json.csrfToken;
+            syncAllCsrfInputs(json.csrfToken);
           }
           resetGasFormToCreate();
           setTimeout(() => { gasModal.hide(); location.hash = 'tab-gas'; location.reload(); }, 1200);
@@ -1384,6 +1715,64 @@
 
     function showAlertGas(msg, type) {
       const el = document.getElementById('formAlertGas');
+      el.className = 'alert alert-' + type + ' mt-3';
+      el.textContent = msg;
+      el.style.display = 'block';
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    document.getElementById('btnSalvarFiltro').addEventListener('click', async function () {
+      const form = document.getElementById('formFiltro');
+      const alertEl = document.getElementById('formAlertFiltro');
+      if (!form.DataHora.value || !form.Filtro.value) {
+        showAlertFiltro('Por favor, preencha Data/Hora e Filtro.', 'danger');
+        return;
+      }
+
+      setBusyFiltro(true);
+      alertEl.style.display = 'none';
+
+      const editId = document.getElementById('fltId').value;
+      const body = {};
+      new FormData(form).forEach((v, k) => { body[k] = v; });
+      form.querySelectorAll('.input-decimal').forEach(el => {
+        body[el.name] = decimalToFloatStr(body[el.name]);
+      });
+
+      const url = editId ? ('/medidor/filtro/editar/' + editId) : '/medidor/filtro/cadastrar';
+
+      try {
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const json = await resp.json();
+        if (json.success) {
+          showAlertFiltro(editId ? 'Leitura atualizada com sucesso!' : 'Leitura salva com sucesso!', 'success');
+          if (json.csrfToken) {
+            syncAllCsrfInputs(json.csrfToken);
+          }
+          resetFiltroFormToCreate();
+          setTimeout(() => { filtroModal.hide(); location.hash = 'tab-filtro'; location.reload(); }, 1200);
+        } else {
+          showAlertFiltro(json.error || 'Erro ao salvar.', 'danger');
+        }
+      } catch {
+        showAlertFiltro('Falha na comunicação com o servidor.', 'danger');
+      } finally {
+        setBusyFiltro(false);
+      }
+    });
+
+    function setBusyFiltro(on) {
+      document.getElementById('btnSalvarFiltroTxt').style.display  = on ? 'none'         : 'inline';
+      document.getElementById('btnSalvarFiltroLoad').style.display = on ? 'inline-block'  : 'none';
+      document.getElementById('btnSalvarFiltro').disabled = on;
+    }
+
+    function showAlertFiltro(msg, type) {
+      const el = document.getElementById('formAlertFiltro');
       el.className = 'alert alert-' + type + ' mt-3';
       el.textContent = msg;
       el.style.display = 'block';
