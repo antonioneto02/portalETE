@@ -9,7 +9,8 @@
       "Bash(node render_test.js)",
       "Bash(node -e ' *)",
       "Bash(node scripts/create-fato-lancamento-filtro.js)",
-      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3021/medidor)"
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3021/medidor)",
+      "Bash(rm -f render_test.js)"
     ]
   }
 }

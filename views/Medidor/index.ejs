@@ -695,10 +695,6 @@
               <div class="form-section-title"><i class="bi bi-person-badge"></i>Identificação</div>
               <div class="row g-2">
                 <div class="col-6 col-md-3 param-pair">
-                  <label for="fData">Data <span class="req">*</span></label>
-                  <input type="date" class="form-control" id="fData" name="Data" required>
-                </div>
-                <div class="col-6 col-md-3 param-pair">
                   <label for="fTurno">Turno <span class="req">*</span></label>
                   <select class="form-control" id="fTurno" name="turno" required>
                     <option value="">— Selecione —</option>
@@ -706,16 +702,6 @@
                     <option>Tarde</option>
                     <option>Noite</option>
                   </select>
-                </div>
-                <div class="col-12 col-md-4 param-pair">
-                  <label for="fOperador">Operador <span class="req">*</span></label>
-                  <select class="form-control" id="fOperador" name="Operador"></select>
-                </div>
-                <div class="col-6 col-md-2 param-pair">
-                  <label for="fMatricula">Matrícula</label>
-                  <input type="text" class="form-control" id="fMatricula" name="matricula"
-                    placeholder="Auto" readonly
-                    style="background:#f3f4f6;cursor:not-allowed;color:#6b7280;">
                 </div>
                 <div class="col-12 col-md-4 param-pair">
                   <label for="fLocal">Local</label>
@@ -882,10 +868,6 @@
               <div class="form-section-title"><i class="bi bi-cloud-fog2"></i>Leitura de Gás</div>
               <div class="row g-2">
                 <div class="col-6 col-md-4 param-pair">
-                  <label for="gDataHora">Data/Hora <span class="req">*</span></label>
-                  <input type="datetime-local" class="form-control" id="gDataHora" name="DataHora" required>
-                </div>
-                <div class="col-6 col-md-4 param-pair">
                   <label for="gTipo">Tipo <span class="req">*</span></label>
                   <select class="form-control" id="gTipo" name="Tipo" required>
                     <option value="">— Selecione —</option>
@@ -900,10 +882,6 @@
                     <option>IBG</option>
                     <option>White Martins</option>
                   </select>
-                </div>
-                <div class="col-12 col-md-4 param-pair">
-                  <label for="gOperador">Operador</label>
-                  <select class="form-control" id="gOperador" name="Operador"></select>
                 </div>
                 <div class="col-6 col-md-3 param-pair">
                   <label for="gLeitura">Leitura</label>
@@ -951,11 +929,7 @@
             <div class="form-section">
               <div class="form-section-title"><i class="bi bi-funnel"></i>Leitura de Filtro</div>
               <div class="row g-2">
-                <div class="col-6 col-md-4 param-pair">
-                  <label for="fltDataHora">Data/Hora <span class="req">*</span></label>
-                  <input type="datetime-local" class="form-control" id="fltDataHora" name="DataHora" required>
-                </div>
-                <div class="col-6 col-md-4 param-pair">
+                <div class="col-6 col-md-6 param-pair">
                   <label for="fltFiltro">Filtro <span class="req">*</span></label>
                   <select class="form-control" id="fltFiltro" name="Filtro" required>
                     <option value="">— Selecione —</option>
@@ -965,15 +939,11 @@
                     <option>Abrandador</option>
                   </select>
                 </div>
-                <div class="col-6 col-md-4 param-pair">
+                <div class="col-6 col-md-6 param-pair">
                   <label for="fltTipo">Tipo</label>
                   <input type="text" class="form-control" id="fltTipo" name="Tipo" readonly
                     placeholder="Auto"
                     style="background:#f3f4f6;cursor:not-allowed;color:#6b7280;">
-                </div>
-                <div class="col-12 col-md-4 param-pair">
-                  <label for="fltOperador">Operador</label>
-                  <select class="form-control" id="fltOperador" name="Operador"></select>
                 </div>
               </div>
             </div>
@@ -1242,71 +1212,15 @@
     const s2optsGas = { dropdownParent: $('#gasModal'), allowClear: true, width: '100%' };
     $('#gTipo').select2({ ...s2optsGas, placeholder: '— Selecione —' });
     $('#gFornecedor').select2({ ...s2optsGas, placeholder: '— Selecione —' });
-    $('#gOperador').select2({
-      dropdownParent: $('#gasModal'),
-      placeholder: 'Digite o nome do operador...',
-      allowClear: true,
-      width: '100%',
-      minimumInputLength: 2,
-      language: { inputTooShort: () => 'Digite ao menos 2 caracteres...' },
-      ajax: {
-        url: '/api/operadores',
-        dataType: 'json',
-        delay: 280,
-        data: p => ({ q: p.term || '' }),
-        processResults: d => ({ results: d }),
-        cache: true,
-      },
-    });
     $('#gTipo').on('change', function () { updateGapGas(); });
     document.getElementById('gLeitura').addEventListener('input', updateGapGas);
     $('#fLocal').on('change', function () { updateGapAcumulo(); updateDescansoReadonly(); });
     document.getElementById('fInicial').addEventListener('input', updateGapAcumulo);
-    $('#fOperador').select2({
-      dropdownParent: $('#medidorModal'),
-      placeholder: 'Digite o nome do operador...',
-      allowClear: true,
-      width: '100%',
-      minimumInputLength: 2,
-      language: { inputTooShort: () => 'Digite ao menos 2 caracteres...' },
-      ajax: {
-        url: '/api/operadores',
-        dataType: 'json',
-        delay: 280,
-        data: p => ({ q: p.term || '' }),
-        processResults: d => ({ results: d }),
-        cache: true,
-      },
-    });
-    $('#fOperador').on('select2:select', function(e) {
-      document.getElementById('fMatricula').value = e.params.data.matricula || '';
-    });
-    $('#fOperador').on('select2:clear', function() {
-      document.getElementById('fMatricula').value = '';
-    });
 
     const s2optsFiltro = { dropdownParent: $('#filtroModal'), allowClear: true, width: '100%' };
     $('#fltFiltro').select2({ ...s2optsFiltro, placeholder: '— Selecione —' });
-    $('#fltOperador').select2({
-      dropdownParent: $('#filtroModal'),
-      placeholder: 'Digite o nome do operador...',
-      allowClear: true,
-      width: '100%',
-      minimumInputLength: 2,
-      language: { inputTooShort: () => 'Digite ao menos 2 caracteres...' },
-      ajax: {
-        url: '/api/operadores',
-        dataType: 'json',
-        delay: 280,
-        data: p => ({ q: p.term || '' }),
-        processResults: d => ({ results: d }),
-        cache: true,
-      },
-    });
     $('#fltFiltro').on('change', function () { updateFiltroTipo(); });
 
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('fData').value = today;
     const modal = new bootstrap.Modal(document.getElementById('medidorModal'));
     const gasModal = new bootstrap.Modal(document.getElementById('gasModal'));
     const filtroModal = new bootstrap.Modal(document.getElementById('filtroModal'));
@@ -1436,9 +1350,6 @@
       $('#fTurno').val('').trigger('change');
       $('#fAspecto').val('').trigger('change');
       $('#fLocal').val('').trigger('change');
-      $('#fOperador').val(null).trigger('change');
-      document.getElementById('fMatricula').value = '';
-      document.getElementById('fData').value = today;
       updateGapAcumulo();
       updateDescansoReadonly();
     }
@@ -1451,8 +1362,6 @@
       document.getElementById('fId').value = id;
       document.getElementById('medidorModalTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i>Editar Lançamento ETA';
 
-      document.getElementById('fData').value = l.Data ? String(l.Data).substring(0, 10) : '';
-      document.getElementById('fMatricula').value = l.matricula || '';
       document.getElementById('fInicial').value = (l.Inicial != null) ? l.Inicial : '';
       document.getElementById('fInicioDescanso').value = toDatetimeLocalValue(l.Inicio_Descanso);
       document.getElementById('fFimDescanso').value = toDatetimeLocalValue(l.Fim_Descanso);
@@ -1464,11 +1373,6 @@
       $('#fTurno').val(turnoLabel).trigger('change');
       $('#fAspecto').val(l.Aspecto_Visual || '').trigger('change');
       $('#fLocal').val(l.LOCAL || '').trigger('change');
-
-      if (l.Operador) {
-        const opt = new Option(l.Operador, l.Operador, true, true);
-        $('#fOperador').append(opt).trigger('change');
-      }
 
       document.getElementById('fCorVis').value        = fmtDecimalInput(l.Cor_Visual);
       document.getElementById('fpH').value             = fmtDecimalInput(l.pH);
@@ -1501,7 +1405,6 @@
       document.getElementById('gasModalTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i>Nova Leitura de Gás';
       $('#gTipo').val('').trigger('change');
       $('#gFornecedor').val('').trigger('change');
-      $('#gOperador').val(null).trigger('change');
     }
 
     function openGasForEdit(id) {
@@ -1512,13 +1415,8 @@
       document.getElementById('gId').value = id;
       document.getElementById('gasModalTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i>Editar Leitura de Gás';
 
-      document.getElementById('gDataHora').value = toDatetimeLocalValue(g.DataHora);
       $('#gTipo').val(g.Tipo || '').trigger('change');
       $('#gFornecedor').val(g.Fornecedor || '').trigger('change');
-      if (g.Operador) {
-        const opt = new Option(g.Operador, g.Operador, true, true);
-        $('#gOperador').append(opt).trigger('change');
-      }
       document.getElementById('gLeitura').value = (g.Leitura != null) ? g.Leitura : '';
       document.getElementById('gPressao').value = (g.Pressao != null) ? g.Pressao : '';
 
@@ -1542,7 +1440,6 @@
       document.getElementById('fltId').value = '';
       document.getElementById('filtroModalTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i>Nova Leitura de Filtro';
       $('#fltFiltro').val('').trigger('change');
-      $('#fltOperador').val(null).trigger('change');
     }
 
     function openFiltroForEdit(id) {
@@ -1553,12 +1450,7 @@
       document.getElementById('fltId').value = id;
       document.getElementById('filtroModalTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i>Editar Leitura de Filtro';
 
-      document.getElementById('fltDataHora').value = toDatetimeLocalValue(f.DataHora);
       $('#fltFiltro').val(f.Filtro || '').trigger('change');
-      if (f.Operador) {
-        const opt = new Option(f.Operador, f.Operador, true, true);
-        $('#fltOperador').append(opt).trigger('change');
-      }
       document.getElementById('fltTurb').value    = fmtDecimalInput(f.Turbidez, 2);
       document.getElementById('fltCor').value     = fmtDecimalInput(f.Cor, 1);
       document.getElementById('fltAlc').value     = fmtDecimalInput(f.Alcalinidade, 1);
@@ -1611,8 +1503,8 @@
     document.getElementById('btnSalvar').addEventListener('click', async function () {
       const form = document.getElementById('formMedidor');
       const alertEl = document.getElementById('formAlert');
-      if (!form.Data.value || !form.turno.value) {
-        showAlert('Por favor, preencha Data e Turno.', 'danger');
+      if (!form.turno.value) {
+        showAlert('Por favor, preencha o Turno.', 'danger');
         return;
       }
 
@@ -1669,8 +1561,8 @@
     document.getElementById('btnSalvarGas').addEventListener('click', async function () {
       const form = document.getElementById('formGas');
       const alertEl = document.getElementById('formAlertGas');
-      if (!form.DataHora.value || !form.Tipo.value || !form.Fornecedor.value) {
-        showAlertGas('Por favor, preencha Data/Hora, Tipo e Fornecedor.', 'danger');
+      if (!form.Tipo.value || !form.Fornecedor.value) {
+        showAlertGas('Por favor, preencha Tipo e Fornecedor.', 'danger');
         return;
       }
 
@@ -1724,8 +1616,8 @@
     document.getElementById('btnSalvarFiltro').addEventListener('click', async function () {
       const form = document.getElementById('formFiltro');
       const alertEl = document.getElementById('formAlertFiltro');
-      if (!form.DataHora.value || !form.Filtro.value) {
-        showAlertFiltro('Por favor, preencha Data/Hora e Filtro.', 'danger');
+      if (!form.Filtro.value) {
+        showAlertFiltro('Por favor, selecione o Filtro.', 'danger');
         return;
       }
 

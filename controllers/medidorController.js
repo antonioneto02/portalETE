@@ -2,6 +2,18 @@ const sql = require('mssql');
 const { getPool } = require('../database/dbConfig');
 const { generateCsrfToken } = require('../middleware/csrf');
 
+async function lookupMatricula(pool, nome) {
+  if (!nome) return null;
+  const result = await pool.request()
+    .input('Nome', sql.VarChar(200), nome)
+    .query(`
+      SELECT TOP 1 RTRIM(LTRIM(MATRICULA)) AS MATRICULA
+      FROM V_RECURSOS_HUMANOS
+      WHERE UPPER(RTRIM(LTRIM(NOME))) = UPPER(@Nome)
+    `);
+  return result.recordset[0]?.MATRICULA || null;
+}
+
 async function renderMedidor(req, res) {
   try {
     const pool = await getPool();
@@ -76,6 +88,9 @@ async function cadastrarLancamento(req, res) {
 
   try {
     const pool = await getPool();
+    const operador = req.session.username || null;
+    const matricula = await lookupMatricula(pool, operador);
+
     const r = pool.request();
     const b = req.body;
     const toStr      = v => (v !== undefined && v !== '' && v !== null) ? String(v).trim() : null;
@@ -84,10 +99,9 @@ async function cadastrarLancamento(req, res) {
     const toDateTime = v => (v !== undefined && v !== '' && v !== null) ? new Date(v) : null;
     const toTurno    = v => ({ 'Manhã': 1, 'Tarde': 2, 'Noite': 3 }[v] ?? null);
 
-    r.input('Data',                    sql.Date,       b.Data || null);
     r.input('turno',                   sql.Int,        toTurno(b.turno));
-    r.input('matricula',               sql.VarChar(50),  toStr(b.matricula));
-    r.input('Operador',                sql.VarChar(100), toStr(b.Operador));
+    r.input('matricula',               sql.VarChar(50),  matricula);
+    r.input('Operador',                sql.VarChar(100), operador);
     r.input('LOCAL',                   sql.VarChar(100), toStr(b.LOCAL));
     r.input('Inicial',                 sql.Int,          toInt(b.Inicial));
     r.input('Inicio_Descanso',         sql.DateTime2,    toDateTime(b.Inicio_Descanso));
@@ -116,7 +130,7 @@ async function cadastrarLancamento(req, res) {
          [Ferro],[Dureza],[Condutividade],[OBS],
          [DataCadastro])
       VALUES
-        (@Data,@turno,@matricula,@Operador,@LOCAL,
+        (GETDATE(),@turno,@matricula,@Operador,@LOCAL,
          @Inicial,@Inicio_Descanso,@Fim_Descanso,@Desligado,@Ligado,
          @Aspecto_Visual,@Cor_Visual,
          @pH,@Cloro,
@@ -158,10 +172,7 @@ async function atualizarLancamento(req, res) {
     const toTurno    = v => ({ 'Manhã': 1, 'Tarde': 2, 'Noite': 3 }[v] ?? null);
 
     r.input('ID',                      sql.Int,        id);
-    r.input('Data',                    sql.Date,       b.Data || null);
     r.input('turno',                   sql.Int,        toTurno(b.turno));
-    r.input('matricula',               sql.VarChar(50),  toStr(b.matricula));
-    r.input('Operador',                sql.VarChar(100), toStr(b.Operador));
     r.input('LOCAL',                   sql.VarChar(100), toStr(b.LOCAL));
     r.input('Inicial',                 sql.Int,          toInt(b.Inicial));
     r.input('Inicio_Descanso',         sql.DateTime2,    toDateTime(b.Inicio_Descanso));
@@ -182,10 +193,7 @@ async function atualizarLancamento(req, res) {
     await r.query(`
       UPDATE [dw].[dbo].[FATO_LANCAMENTO_ETA]
       SET
-        [Data] = @Data,
         [turno] = @turno,
-        [matricula] = @matricula,
-        [Operador] = @Operador,
         [LOCAL] = @LOCAL,
         [Inicial] = @Inicial,
         [Inicio_Descanso] = @Inicio_Descanso,
@@ -254,31 +262,4 @@ async function getHomeStats(req, res) {
   }
 }
 
-async function getOperadores(req, res) {
-  const q = String(req.query.q || '').trim();
-  try {
-    const pool = await getPool();
-    const result = await pool.request()
-      .input('Q', sql.VarChar(200), '%' + q.toUpperCase() + '%')
-      .query(`
-        SELECT DISTINCT
-          RTRIM(LTRIM(MATRICULA)) AS MATRICULA,
-          RTRIM(LTRIM(NOME))      AS NOME
-        FROM V_RECURSOS_HUMANOS
-        WHERE MATRICULA IS NOT NULL AND MATRICULA <> ''
-          AND NOME IS NOT NULL AND NOME <> ''
-          AND UPPER(NOME) LIKE @Q
-        ORDER BY NOME
-      `);
-    res.json(result.recordset.map(r => ({
-      id:        r.NOME,
-      text:      r.NOME.trim() + '  (' + r.MATRICULA.trim() + ')',
-      matricula: r.MATRICULA.trim(),
-    })));
-  } catch (err) {
-    console.error('[getOperadores]', err);
-    res.json([]);
-  }
-}
-
-module.exports = { renderMedidor, cadastrarLancamento, atualizarLancamento, getHomeStats, getOperadores };
+module.exports = { renderMedidor, cadastrarLancamento, atualizarLancamento, getHomeStats };

@@ -7,7 +7,6 @@ const {
   cadastrarLancamento,
   atualizarLancamento,
   getHomeStats,
-  getOperadores,
 } = require('../controllers/medidorController');
 const { cadastrarGas, atualizarGas } = require('../controllers/gasController');
 const { cadastrarFiltro, atualizarFiltro } = require('../controllers/filtroController');
@@ -21,6 +20,5 @@ router.post('/medidor/gas/editar/:id', requireAuth, atualizarGas);
 router.post('/medidor/filtro/cadastrar', requireAuth, cadastrarFiltro);
 router.post('/medidor/filtro/editar/:id', requireAuth, atualizarFiltro);
 router.get('/api/home-stats',  requireAuth, getHomeStats);
-router.get('/api/operadores',  requireAuth, getOperadores);
 
 module.exports = router;

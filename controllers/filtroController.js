@@ -14,9 +14,8 @@ function deriveTipo(filtro) {
 }
 
 function parseBody(b) {
-  const toStr      = v => (v !== undefined && v !== '' && v !== null) ? String(v).trim() : null;
-  const toFloat    = v => (v !== undefined && v !== '' && v !== null) ? parseFloat(v) : null;
-  const toDateTime = v => (v !== undefined && v !== '' && v !== null) ? new Date(v) : null;
+  const toStr   = v => (v !== undefined && v !== '' && v !== null) ? String(v).trim() : null;
+  const toFloat = v => (v !== undefined && v !== '' && v !== null) ? parseFloat(v) : null;
 
   const filtro = toStr(b.Filtro);
   const tipo = deriveTipo(filtro);
@@ -24,8 +23,6 @@ function parseBody(b) {
 
   const isRetro = tipo === 'Retrolavagem';
   return {
-    DataHora:     toDateTime(b.DataHora),
-    Operador:     toStr(b.Operador),
     Filtro:       filtro,
     Tipo:         tipo,
     Turbidez:     isRetro ? toFloat(b.Turbidez) : null,
@@ -52,8 +49,7 @@ async function cadastrarFiltro(req, res) {
     const pool = await getPool();
     const r = pool.request();
 
-    r.input('DataHora',     sql.DateTime2,    data.DataHora);
-    r.input('Operador',     sql.VarChar(100), data.Operador);
+    r.input('Operador',     sql.VarChar(100), req.session.username || null);
     r.input('Filtro',       sql.VarChar(30),  data.Filtro);
     r.input('Tipo',         sql.VarChar(20),  data.Tipo);
     r.input('Turbidez',     sql.Float,        data.Turbidez);
@@ -65,7 +61,7 @@ async function cadastrarFiltro(req, res) {
       INSERT INTO [dw].[dbo].[FATO_LANCAMENTO_FILTRO]
         ([DataHora],[Operador],[Filtro],[Tipo],[Turbidez],[Cor],[Alcalinidade],[Dureza],[DataCadastro])
       VALUES
-        (@DataHora,@Operador,@Filtro,@Tipo,@Turbidez,@Cor,@Alcalinidade,@Dureza,GETDATE())
+        (GETDATE(),@Operador,@Filtro,@Tipo,@Turbidez,@Cor,@Alcalinidade,@Dureza,GETDATE())
     `);
 
     const newCsrf = generateCsrfToken(req);
@@ -99,8 +95,6 @@ async function atualizarFiltro(req, res) {
     const r = pool.request();
 
     r.input('ID',           sql.Int,          id);
-    r.input('DataHora',     sql.DateTime2,    data.DataHora);
-    r.input('Operador',     sql.VarChar(100), data.Operador);
     r.input('Filtro',       sql.VarChar(30),  data.Filtro);
     r.input('Tipo',         sql.VarChar(20),  data.Tipo);
     r.input('Turbidez',     sql.Float,        data.Turbidez);
@@ -111,8 +105,6 @@ async function atualizarFiltro(req, res) {
     await r.query(`
       UPDATE [dw].[dbo].[FATO_LANCAMENTO_FILTRO]
       SET
-        [DataHora] = @DataHora,
-        [Operador] = @Operador,
         [Filtro] = @Filtro,
         [Tipo] = @Tipo,
         [Turbidez] = @Turbidez,

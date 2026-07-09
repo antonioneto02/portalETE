@@ -16,12 +16,10 @@ async function cadastrarGas(req, res) {
     const b = req.body;
     const toStr = v => (v !== undefined && v !== '' && v !== null) ? String(v).trim() : null;
     const toInt = v => (v !== undefined && v !== '' && v !== null) ? parseInt(v, 10) : null;
-    const toDateTime = v => (v !== undefined && v !== '' && v !== null) ? new Date(v) : null;
 
-    r.input('DataHora',   sql.DateTime2,    toDateTime(b.DataHora));
     r.input('Tipo',       sql.VarChar(20),  toStr(b.Tipo));
     r.input('Fornecedor', sql.VarChar(50),  toStr(b.Fornecedor));
-    r.input('Operador',   sql.VarChar(100), toStr(b.Operador));
+    r.input('Operador',   sql.VarChar(100), req.session.username || null);
     r.input('Leitura',    sql.Int,          toInt(b.Leitura));
     r.input('Pressao',    sql.Int,          toInt(b.Pressao));
 
@@ -29,7 +27,7 @@ async function cadastrarGas(req, res) {
       INSERT INTO [dw].[dbo].[FATO_LANCAMENTO_GAS]
         ([DataHora],[Tipo],[Fornecedor],[Operador],[Leitura],[Pressao],[DataCadastro])
       VALUES
-        (@DataHora,@Tipo,@Fornecedor,@Operador,@Leitura,@Pressao,GETDATE())
+        (GETDATE(),@Tipo,@Fornecedor,@Operador,@Leitura,@Pressao,GETDATE())
     `);
 
     const newCsrf = generateCsrfToken(req);
@@ -59,23 +57,18 @@ async function atualizarGas(req, res) {
     const b = req.body;
     const toStr = v => (v !== undefined && v !== '' && v !== null) ? String(v).trim() : null;
     const toInt = v => (v !== undefined && v !== '' && v !== null) ? parseInt(v, 10) : null;
-    const toDateTime = v => (v !== undefined && v !== '' && v !== null) ? new Date(v) : null;
 
     r.input('ID',          sql.Int,          id);
-    r.input('DataHora',    sql.DateTime2,    toDateTime(b.DataHora));
     r.input('Tipo',        sql.VarChar(20),  toStr(b.Tipo));
     r.input('Fornecedor',  sql.VarChar(50),  toStr(b.Fornecedor));
-    r.input('Operador',    sql.VarChar(100), toStr(b.Operador));
     r.input('Leitura',     sql.Int,          toInt(b.Leitura));
     r.input('Pressao',     sql.Int,          toInt(b.Pressao));
 
     await r.query(`
       UPDATE [dw].[dbo].[FATO_LANCAMENTO_GAS]
       SET
-        [DataHora] = @DataHora,
         [Tipo] = @Tipo,
         [Fornecedor] = @Fornecedor,
-        [Operador] = @Operador,
         [Leitura] = @Leitura,
         [Pressao] = @Pressao,
         [DataAlteracao] = GETDATE()
