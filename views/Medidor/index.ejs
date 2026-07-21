@@ -647,10 +647,11 @@
           </div>
           <div class="card-body p-0 p-md-3">
             <%
-              const filtroRetroCount = lancamentosFiltro.filter(f => f.Tipo === 'Retrolavagem').length;
+              const isTipoRetro = tipo => tipo === 'Retrolavagem' || tipo === 'Retrolavagem e Vaporização';
+              const filtroRetroCount = lancamentosFiltro.filter(f => isTipoRetro(f.Tipo)).length;
               const filtroRegenCount = lancamentosFiltro.filter(f => f.Tipo === 'Regeneramento').length;
               function ultimaDoTipoFiltro(tipo) {
-                const rows = lancamentosFiltro.filter(f => f.Tipo === tipo);
+                const rows = lancamentosFiltro.filter(f => tipo === 'Retrolavagem' ? isTipoRetro(f.Tipo) : f.Tipo === tipo);
                 return rows.length ? rows[0] : null;
               }
               const ultimaRetro = ultimaDoTipoFiltro('Retrolavagem');
@@ -744,7 +745,7 @@
                   <div class="mrc-details">
                     <div class="mrc-subhead">Parâmetros Medidos</div>
                     <div class="mrc-grid">
-                      <% if (f.Tipo === 'Retrolavagem') { %>
+                      <% if (f.Tipo === 'Retrolavagem' || f.Tipo === 'Retrolavagem e Vaporização') { %>
                         <div class="mrc-item"><span class="mrc-lbl">Turbidez</span><span class="mrc-val"><%= fmtNum(raw(f.Turbidez), 2) %></span></div>
                         <div class="mrc-item"><span class="mrc-lbl">Cor</span><span class="mrc-val"><%= fmtNum(raw(f.Cor), 1) %></span></div>
                       <% } else { %>
@@ -1079,6 +1080,8 @@
                     <option>Areia</option>
                     <option>Abrandador VEXER</option>
                     <option>Abrandador</option>
+                    <option>Carvão</option>
+                    <option>Carvão Novo</option>
                   </select>
                 </div>
                 <div class="col-6 col-md-6 param-pair">
@@ -1147,6 +1150,8 @@
     'Areia':            'Retrolavagem',
     'Abrandador VEXER': 'Regeneramento',
     'Abrandador':       'Regeneramento',
+    'Carvão':           'Retrolavagem e Vaporização',
+    'Carvão Novo':      'Retrolavagem e Vaporização',
   };
 
   function maskDecimalInput(el) {
@@ -1468,7 +1473,7 @@
 
       const retroGroup = document.getElementById('filtroGroupRetro');
       const regenGroup = document.getElementById('filtroGroupRegen');
-      const showRetro = tipo === 'Retrolavagem';
+      const showRetro = tipo === 'Retrolavagem' || tipo === 'Retrolavagem e Vaporização';
       const showRegen = tipo === 'Regeneramento';
 
       retroGroup.style.display = showRetro ? '' : 'none';

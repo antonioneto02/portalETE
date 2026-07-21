@@ -7,6 +7,8 @@ const FILTRO_TIPO_MAP = {
   'Areia':            'Retrolavagem',
   'Abrandador VEXER': 'Regeneramento',
   'Abrandador':       'Regeneramento',
+  'Carvão':           'Retrolavagem e Vaporização',
+  'Carvão Novo':      'Retrolavagem e Vaporização',
 };
 
 function deriveTipo(filtro) {
@@ -21,7 +23,7 @@ function parseBody(b) {
   const tipo = deriveTipo(filtro);
   if (!tipo) return { error: 'Filtro inválido.' };
 
-  const isRetro = tipo === 'Retrolavagem';
+  const isRetro = tipo === 'Retrolavagem' || tipo === 'Retrolavagem e Vaporização';
   return {
     Filtro:       filtro,
     Tipo:         tipo,
@@ -51,7 +53,7 @@ async function cadastrarFiltro(req, res) {
 
     r.input('Operador',     sql.VarChar(100), req.session.username || null);
     r.input('Filtro',       sql.VarChar(30),  data.Filtro);
-    r.input('Tipo',         sql.VarChar(20),  data.Tipo);
+    r.input('Tipo',         sql.VarChar(30),  data.Tipo);
     r.input('Turbidez',     sql.Float,        data.Turbidez);
     r.input('Cor',          sql.Float,        data.Cor);
     r.input('Alcalinidade', sql.Float,        data.Alcalinidade);
@@ -96,7 +98,7 @@ async function atualizarFiltro(req, res) {
 
     r.input('ID',           sql.Int,          id);
     r.input('Filtro',       sql.VarChar(30),  data.Filtro);
-    r.input('Tipo',         sql.VarChar(20),  data.Tipo);
+    r.input('Tipo',         sql.VarChar(30),  data.Tipo);
     r.input('Turbidez',     sql.Float,        data.Turbidez);
     r.input('Cor',          sql.Float,        data.Cor);
     r.input('Alcalinidade', sql.Float,        data.Alcalinidade);
