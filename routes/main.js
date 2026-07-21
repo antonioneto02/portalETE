@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../controllers/loginController');
 const { renderHome }  = require('../controllers/homeController');
+const { renderPainel } = require('../controllers/painelController');
 const {
   renderMedidor,
   cadastrarLancamento,
@@ -12,6 +13,7 @@ const { cadastrarGas, atualizarGas } = require('../controllers/gasController');
 const { cadastrarFiltro, atualizarFiltro } = require('../controllers/filtroController');
 
 router.get('/home',    requireAuth, renderHome);
+router.get('/painel',  requireAuth, renderPainel);
 router.get('/medidor', requireAuth, renderMedidor);
 router.post('/medidor/cadastrar', requireAuth, cadastrarLancamento);
 router.post('/medidor/editar/:id', requireAuth, atualizarLancamento);
