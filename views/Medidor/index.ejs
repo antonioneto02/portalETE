@@ -9,9 +9,6 @@
     .badge-turno { font-size:.72rem; padding:3px 8px; border-radius:10px; }
     .dt-compact td, .dt-compact th { padding:6px 8px !important; font-size:.82rem; }
     .dt-compact th { white-space:nowrap; }
-    .val-ok  { color:#16a34a; font-weight:600; }
-    .val-warn{ color:#d97706; font-weight:600; }
-    .val-bad { color:#b91c1c; font-weight:600; }
     .btn-excel { background:#16a34a !important; color:white !important; border:none !important; }
     .btn-excel:hover { background:#15803d !important; }
     @media (max-width:767px) { .dt-buttons { display:none !important; } }
@@ -60,17 +57,11 @@
     }
     .mob-chip.mob-chip-active { border-color:#2B286F; background:#2B286F; color:#fff; }
     .mob-chip.mob-chip-active .mob-chip-count { background:rgba(255,255,255,.22); color:#fff; }
-    .mob-chip[data-filter="bad"].mob-chip-active  { border-color:#dc2626; background:#dc2626; }
-    .mob-chip[data-filter="warn"].mob-chip-active { border-color:#d97706; background:#d97706; }
-    .mob-chip[data-filter="ok"].mob-chip-active   { border-color:#16a34a; background:#16a34a; }
 
     .mobile-reg-card {
       background:#fff; border:1px solid #e9edf2; border-left:4px solid #d1d5db; border-radius:10px;
       padding:12px 14px; margin-bottom:10px; box-shadow:0 1px 4px rgba(0,0,0,.05);
     }
-    .mobile-reg-card.status-bad  { border-left-color:#dc2626; }
-    .mobile-reg-card.status-warn { border-left-color:#d97706; }
-    .mobile-reg-card.status-ok   { border-left-color:#16a34a; }
     .mrc-row { display:flex; align-items:center; gap:10px; cursor:pointer; }
     .mrc-icon {
       width:38px; height:38px; border-radius:10px; flex-shrink:0;
@@ -81,11 +72,6 @@
     .mrc-title { font-weight:700; font-size:.9rem; color:#1f2430; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .mrc-sub { font-size:.74rem; color:#6b7280; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px; }
     .mrc-side { display:flex; align-items:center; gap:8px; flex-shrink:0; }
-    .mrc-chip { font-size:.68rem; font-weight:700; padding:4px 9px; border-radius:20px; white-space:nowrap; }
-    .mrc-chip.val-ok   { background:rgba(22,163,74,.12); color:#16a34a; }
-    .mrc-chip.val-warn { background:rgba(217,119,6,.12); color:#d97706; }
-    .mrc-chip.val-bad  { background:rgba(220,38,38,.12); color:#dc2626; }
-    .mrc-chip.val-none { background:#f1f3f5; color:#9ca3af; }
     .mrc-chevron { font-size:.8rem; color:#9ca3af; transition:transform .2s; }
     .mobile-reg-card.open .mrc-chevron { transform:rotate(180deg); }
     .mrc-details { display:none; margin-top:10px; padding-top:10px; border-top:1px solid #f1f3f5; }
@@ -347,39 +333,9 @@
               }
               function fmtInt(v) { return (v==null||v==='') ? '—' : v; }
               function turnoLabel(t) { return t===1?'Manhã':t===2?'Tarde':t===3?'Noite':t||'—'; }
-              function cls(v, min, max) {
-                if(v==null) return '';
-                if(min!=null&&max!=null){ if(v>=min&&v<=max)return 'val-ok'; if(v<min*0.8||v>max*1.2)return 'val-bad'; return 'val-warn'; }
-                return '';
-              }
-              function overallStatus(l) {
-                const classes = [
-                  cls(raw(l.pH),6.5,9.5), cls(raw(l.Cloro),0.2,5.0), cls(raw(l.Turbidez),0,1.0),
-                  cls(raw(l.Ferro),0,0.3), cls(raw(l.Cor_Visual),0,15),
-                ].filter(Boolean);
-                if (!classes.length) return 'none';
-                if (classes.includes('val-bad'))  return 'bad';
-                if (classes.includes('val-warn')) return 'warn';
-                return 'ok';
-              }
-              function indBg(v, min, max) {
-                if (v==null) return ['#64748b','#94a3b8'];
-                if (min!=null && max!=null) {
-                  if (v>=min && v<=max) return ['#166534','#16a34a'];
-                  if (v<min*0.85 || v>max*1.15) return ['#991b1b','#b91c1c'];
-                  return ['#92400e','#d97706'];
-                }
-                return ['#1e40af','#2B286F'];
-              }
               function diasDesde(dataStr) {
                 if (!dataStr) return null;
                 return Math.floor((Date.now() - new Date(dataStr).getTime()) / 86400000);
-              }
-              function diasBg(dias) {
-                if (dias==null) return ['#64748b','#94a3b8'];
-                if (dias<=7)  return ['#166534','#16a34a'];
-                if (dias<=15) return ['#92400e','#d97706'];
-                return ['#991b1b','#b91c1c'];
               }
               function media(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null; }
 
@@ -389,31 +345,19 @@
               const aguaTurbVals = lancamentos.map(l => raw(l.Turbidez)).filter(v => v != null);
               const aguaPhMedio = media(aguaPhVals);
               const aguaTurbMedio = media(aguaTurbVals);
-              const aguaPhConformidade = aguaPhVals.length
-                ? (aguaPhVals.filter(v => v>=6.5 && v<=9.5).length / aguaPhVals.length * 100)
-                : null;
-              const aguaAlertasCount = lancamentos.filter(l => overallStatus(l) === 'bad').length;
             %>
             <div class="indicators-bar">
               <div class="indicator-card" style="background:linear-gradient(135deg,#1e40af,#2B286F);">
                 <div class="indicator-val"><%= aguaHojeCount %></div>
                 <div class="indicator-lbl">Registros hoje</div>
               </div>
-              <div class="indicator-card" style="background:linear-gradient(135deg,<%= indBg(aguaPhMedio,6.5,9.5).join(',') %>);">
+              <div class="indicator-card" style="background:linear-gradient(135deg,#1e40af,#2B286F);">
                 <div class="indicator-val"><%= aguaPhMedio!=null ? fmtNum(aguaPhMedio,2) : '—' %></div>
                 <div class="indicator-lbl">pH médio</div>
               </div>
-              <div class="indicator-card" style="background:linear-gradient(135deg,<%= indBg(aguaTurbMedio,0,1.0).join(',') %>);">
+              <div class="indicator-card" style="background:linear-gradient(135deg,#1e40af,#2B286F);">
                 <div class="indicator-val"><%= aguaTurbMedio!=null ? fmtNum(aguaTurbMedio,2) : '—' %></div>
                 <div class="indicator-lbl">Turbidez média</div>
-              </div>
-              <div class="indicator-card" style="background:linear-gradient(135deg,#065f46,#059669);">
-                <div class="indicator-val"><%= aguaPhConformidade!=null ? fmtNum(aguaPhConformidade,1)+'%' : '—' %></div>
-                <div class="indicator-lbl">Conformidade pH</div>
-              </div>
-              <div class="indicator-card" style="background:linear-gradient(135deg,<%= aguaAlertasCount>0 ? '#991b1b,#b91c1c' : '#166534,#16a34a' %>);">
-                <div class="indicator-val"><%= aguaAlertasCount %></div>
-                <div class="indicator-lbl">Alertas</div>
               </div>
             </div>
             <div class="d-none d-md-block" style="overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;">
@@ -460,12 +404,12 @@
                     <td><%= l.matricula||'—' %></td>
                     <td><%= l.LOCAL||'—' %></td>
                     <td><%= l.Aspecto_Visual||'—' %></td>
-                    <td class="<%= cls(raw(l.Cor_Visual),0,15) %>"><%= fmtRaw(l.Cor_Visual) %></td>
-                    <td class="<%= cls(raw(l.pH),6.5,9.5) %>"><%= fmtRaw(l.pH) %></td>
-                    <td class="<%= cls(raw(l.Cloro),0.2,5.0) %>"><%= fmtRaw(l.Cloro) %></td>
-                    <td class="<%= cls(raw(l.Turbidez),0,1.0) %>"><%= fmtRaw(l.Turbidez) %></td>
+                    <td><%= fmtRaw(l.Cor_Visual) %></td>
+                    <td><%= fmtRaw(l.pH) %></td>
+                    <td><%= fmtRaw(l.Cloro) %></td>
+                    <td><%= fmtRaw(l.Turbidez) %></td>
                     <td><%= fmtRaw(l.Alcalinidade) %></td>
-                    <td class="<%= cls(raw(l.Ferro),0,0.3) %>"><%= fmtRaw(l.Ferro) %></td>
+                    <td><%= fmtRaw(l.Ferro) %></td>
                     <td><%= fmtRaw(l.Dureza) %></td>
                     <td><%= fmtRaw(l.Condutividade) %></td>
                     <td><%= fmtInt(l.Inicial) %></td>
@@ -497,14 +441,14 @@
                   <button type="button" class="mob-chip mob-chip-active" data-filter="todos">
                     Todos <span class="mob-chip-count" id="cntTodos">0</span>
                   </button>
-                  <button type="button" class="mob-chip" data-filter="bad">
-                    <i class="bi bi-exclamation-circle"></i> Alerta <span class="mob-chip-count" id="cntBad">0</span>
+                  <button type="button" class="mob-chip" data-filter="1">
+                    Manhã <span class="mob-chip-count" id="cntManha">0</span>
                   </button>
-                  <button type="button" class="mob-chip" data-filter="warn">
-                    <i class="bi bi-clock-history"></i> Atenção <span class="mob-chip-count" id="cntWarn">0</span>
+                  <button type="button" class="mob-chip" data-filter="2">
+                    Tarde <span class="mob-chip-count" id="cntTarde">0</span>
                   </button>
-                  <button type="button" class="mob-chip" data-filter="ok">
-                    <i class="bi bi-check-circle"></i> Conforme <span class="mob-chip-count" id="cntOk">0</span>
+                  <button type="button" class="mob-chip" data-filter="3">
+                    Noite <span class="mob-chip-count" id="cntNoite">0</span>
                   </button>
                 </div>
               </div>
@@ -515,11 +459,8 @@
 
               <% lancamentos.forEach(function(l) {
                 const searchStr = ((l.LOCAL||'') + ' ' + (l.Operador||'') + ' ' + (l.matricula||'')).toLowerCase();
-                const status = overallStatus(l);
-                const statusLabel = { bad:'Alerta', warn:'Atenção', ok:'Conforme', none:'—' }[status];
-                const statusChipCls = { bad:'val-bad', warn:'val-warn', ok:'val-ok', none:'val-none' }[status];
               %>
-                <div class="mobile-reg-card status-<%= status %>" data-search="<%= searchStr %>" data-status="<%= status %>" data-id="<%= l.ID %>">
+                <div class="mobile-reg-card" data-search="<%= searchStr %>" data-turno="<%= l.turno||'' %>" data-id="<%= l.ID %>">
                   <div class="mrc-row">
                     <div class="mrc-icon"><i class="bi bi-droplet-half"></i></div>
                     <div class="mrc-main">
@@ -527,7 +468,6 @@
                       <div class="mrc-sub"><%= fmtDate(l.Data) %> · <%= turnoLabel(l.turno) %> · <%= l.Operador||'—' %></div>
                     </div>
                     <div class="mrc-side">
-                      <span class="mrc-chip <%= statusChipCls %>"><%= statusLabel %></span>
                       <i class="bi bi-chevron-down mrc-chevron"></i>
                     </div>
                   </div>
@@ -606,11 +546,11 @@
                 <div class="indicator-val"><%= gasPressaoMedia!=null ? fmtNum(gasPressaoMedia) : '—' %></div>
                 <div class="indicator-lbl">Pressão média</div>
               </div>
-              <div class="indicator-card" style="background:linear-gradient(135deg,<%= diasBg(diasNitrogenio).join(',') %>);">
+              <div class="indicator-card" style="background:linear-gradient(135deg,#1e40af,#2B286F);">
                 <div class="indicator-val"><%= diasNitrogenio!=null ? diasNitrogenio : '—' %></div>
                 <div class="indicator-lbl">Dias s/ leitura N₂</div>
               </div>
-              <div class="indicator-card" style="background:linear-gradient(135deg,<%= diasBg(diasCO2).join(',') %>);">
+              <div class="indicator-card" style="background:linear-gradient(135deg,#1e40af,#2B286F);">
                 <div class="indicator-val"><%= diasCO2!=null ? diasCO2 : '—' %></div>
                 <div class="indicator-lbl">Dias s/ leitura CO2</div>
               </div>
@@ -727,23 +667,21 @@
               }
               const ultimaRetro = ultimaDoTipoFiltro('Retrolavagem');
               const ultimaRegen = ultimaDoTipoFiltro('Regeneramento');
-              const diasRetro = diasDesde(ultimaRetro && ultimaRetro.DataHora);
-              const diasRegen = diasDesde(ultimaRegen && ultimaRegen.DataHora);
             %>
             <div class="indicators-bar">
-              <div class="indicator-card" style="background:linear-gradient(135deg,#16a34a,#166534);">
+              <div class="indicator-card" style="background:linear-gradient(135deg,#1e40af,#2B286F);">
                 <div class="indicator-val"><%= filtroRetroCount %></div>
                 <div class="indicator-lbl">Retrolavagens</div>
               </div>
-              <div class="indicator-card" style="background:linear-gradient(135deg,#7c3aed,#5b21b6);">
+              <div class="indicator-card" style="background:linear-gradient(135deg,#1e40af,#2B286F);">
                 <div class="indicator-val"><%= filtroRegenCount %></div>
                 <div class="indicator-lbl">Regenerações</div>
               </div>
-              <div class="indicator-card" style="background:linear-gradient(135deg,<%= diasBg(diasRetro).join(',') %>);">
+              <div class="indicator-card" style="background:linear-gradient(135deg,#1e40af,#2B286F);">
                 <div class="indicator-val" style="font-size:1.3rem;"><%= ultimaRetro ? fmtDate(ultimaRetro.DataHora) : '—' %></div>
                 <div class="indicator-lbl">Última retrolavagem</div>
               </div>
-              <div class="indicator-card" style="background:linear-gradient(135deg,<%= diasBg(diasRegen).join(',') %>);">
+              <div class="indicator-card" style="background:linear-gradient(135deg,#1e40af,#2B286F);">
                 <div class="indicator-val" style="font-size:1.3rem;"><%= ultimaRegen && ultimaRegen.Operador ? ultimaRegen.Operador : '—' %></div>
                 <div class="indicator-lbl">Última regeneração</div>
               </div>
@@ -1625,18 +1563,18 @@
       const mobileSearchInput = document.getElementById('mobileSearchInput');
       const cards = document.querySelectorAll('#mobileCardList .mobile-reg-card');
       const emptyMsg = document.getElementById('mobileEmptyMsg');
-      const chips = document.querySelectorAll('.mob-chip');
+      const chips = document.querySelectorAll('#mobileCardList .mob-chip');
       if (!cards.length) return;
 
-      const counts = { bad: 0, warn: 0, ok: 0, none: 0 };
+      const counts = { 1: 0, 2: 0, 3: 0 };
       cards.forEach(function (card) {
-        if (counts[card.dataset.status] !== undefined) counts[card.dataset.status]++;
+        if (counts[card.dataset.turno] !== undefined) counts[card.dataset.turno]++;
       });
       const setCount = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
       setCount('cntTodos', cards.length);
-      setCount('cntBad', counts.bad);
-      setCount('cntWarn', counts.warn);
-      setCount('cntOk', counts.ok);
+      setCount('cntManha', counts[1]);
+      setCount('cntTarde', counts[2]);
+      setCount('cntNoite', counts[3]);
 
       let activeFilter = 'todos';
 
@@ -1645,7 +1583,7 @@
         let visibleCount = 0;
         cards.forEach(function (card) {
           const matchesSearch = !term || card.dataset.search.includes(term);
-          const matchesFilter = activeFilter === 'todos' || card.dataset.status === activeFilter;
+          const matchesFilter = activeFilter === 'todos' || card.dataset.turno === activeFilter;
           const show = matchesSearch && matchesFilter;
           card.style.display = show ? '' : 'none';
           if (show) visibleCount++;
