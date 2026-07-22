@@ -70,6 +70,7 @@
     }
     .mrc-main { flex:1; min-width:0; }
     .mrc-title { font-weight:700; font-size:.9rem; color:#1f2430; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .mrc-title-suffix { font-weight:400; color:#6b7280; }
     .mrc-sub { font-size:.74rem; color:#6b7280; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px; }
     .mrc-side { display:flex; align-items:center; gap:8px; flex-shrink:0; }
     .mrc-chevron { font-size:.8rem; color:#9ca3af; transition:transform .2s; }
@@ -459,6 +460,28 @@
 
               <% lancamentos.forEach(function(l) {
                 const searchStr = ((l.LOCAL||'') + ' ' + (l.Operador||'') + ' ' + (l.matricula||'')).toLowerCase();
+                const gruposAgua = [
+                  { titulo: 'Identificação', itens: [
+                    { lbl: 'Operador', val: l.Operador },
+                    { lbl: 'Turno', val: l.turno ? turnoLabel(l.turno) : null },
+                    { lbl: 'Leitura', val: raw(l.Inicial)!=null ? fmtInt(l.Inicial) : null },
+                    { lbl: 'Início Descanso', val: l.Inicio_Descanso ? fmtDateTime(l.Inicio_Descanso) : null },
+                    { lbl: 'Fim Descanso', val: l.Fim_Descanso ? fmtDateTime(l.Fim_Descanso) : null },
+                  ]},
+                  { titulo: 'Aspectos Físicos', itens: [
+                    { lbl: 'Aspecto Visual', val: l.Aspecto_Visual },
+                    { lbl: 'Cor (uH)', val: raw(l.Cor_Visual)!=null ? fmtRaw(l.Cor_Visual) : null },
+                  ]},
+                  { titulo: 'Parâmetros Químicos', itens: [
+                    { lbl: 'pH', val: raw(l.pH)!=null ? fmtRaw(l.pH) : null },
+                    { lbl: 'Cloro (mg/L)', val: raw(l.Cloro)!=null ? fmtRaw(l.Cloro) : null },
+                    { lbl: 'Turbidez (uT)', val: raw(l.Turbidez)!=null ? fmtRaw(l.Turbidez) : null },
+                    { lbl: 'Alcalinidade', val: raw(l.Alcalinidade)!=null ? fmtRaw(l.Alcalinidade) : null },
+                    { lbl: 'Ferro (mg/L)', val: raw(l.Ferro)!=null ? fmtRaw(l.Ferro) : null },
+                    { lbl: 'Dureza', val: raw(l.Dureza)!=null ? fmtRaw(l.Dureza) : null },
+                    { lbl: 'Condutividade', val: raw(l.Condutividade)!=null ? fmtRaw(l.Condutividade) : null },
+                  ]},
+                ].map(g => ({ titulo: g.titulo, itens: g.itens.filter(i => i.val!=null && i.val!=='') })).filter(g => g.itens.length);
               %>
                 <div class="mobile-reg-card" data-search="<%= searchStr %>" data-turno="<%= l.turno||'' %>" data-id="<%= l.ID %>">
                   <div class="mrc-row">
@@ -472,32 +495,14 @@
                     </div>
                   </div>
                   <div class="mrc-details">
-                    <div class="mrc-subhead">Identificação</div>
-                    <div class="mrc-grid">
-                      <div class="mrc-item"><span class="mrc-lbl">Operador</span><span class="mrc-val"><%= l.Operador||'—' %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Matrícula</span><span class="mrc-val"><%= l.matricula||'—' %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Turno</span><span class="mrc-val"><%= turnoLabel(l.turno) %></span></div>
-                    </div>
-                    <div class="mrc-subhead">Parâmetros Medidos</div>
-                    <div class="mrc-grid">
-                      <div class="mrc-item"><span class="mrc-lbl">Aspecto Visual</span><span class="mrc-val"><%= l.Aspecto_Visual||'—' %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Cor (uH)</span><span class="mrc-val"><%= fmtRaw(l.Cor_Visual) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">pH</span><span class="mrc-val"><%= fmtRaw(l.pH) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Cloro (mg/L)</span><span class="mrc-val"><%= fmtRaw(l.Cloro) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Turbidez (uT)</span><span class="mrc-val"><%= fmtRaw(l.Turbidez) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Alcalinidade</span><span class="mrc-val"><%= fmtRaw(l.Alcalinidade) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Ferro (mg/L)</span><span class="mrc-val"><%= fmtRaw(l.Ferro) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Dureza</span><span class="mrc-val"><%= fmtRaw(l.Dureza) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Condutividade</span><span class="mrc-val"><%= fmtRaw(l.Condutividade) %></span></div>
-                    </div>
-                    <div class="mrc-subhead">Horários</div>
-                    <div class="mrc-grid">
-                      <div class="mrc-item"><span class="mrc-lbl">Início</span><span class="mrc-val"><%= fmtInt(l.Inicial) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Início Descanso</span><span class="mrc-val"><%= fmtDateTime(l.Inicio_Descanso) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Fim Descanso</span><span class="mrc-val"><%= fmtDateTime(l.Fim_Descanso) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Ligado</span><span class="mrc-val"><%= l.Ligado||'—' %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Desligado</span><span class="mrc-val"><%= l.Desligado||'—' %></span></div>
-                    </div>
+                    <% gruposAgua.forEach(function(g) { %>
+                      <div class="mrc-subhead"><%= g.titulo %></div>
+                      <div class="mrc-grid">
+                        <% g.itens.forEach(function(i) { %>
+                          <div class="mrc-item"><span class="mrc-lbl"><%= i.lbl %></span><span class="mrc-val"><%= i.val %></span></div>
+                        <% }); %>
+                      </div>
+                    <% }); %>
                     <% if (l.OBS) { %>
                       <div class="mrc-obs"><i class="bi bi-chat-left-text me-1"></i><%= l.OBS %></div>
                     <% } %>
@@ -617,8 +622,8 @@
                   <div class="mrc-row">
                     <div class="mrc-icon"><i class="bi bi-cloud-fog2"></i></div>
                     <div class="mrc-main">
-                      <div class="mrc-title"><%= g.Tipo||'—' %></div>
-                      <div class="mrc-sub"><%= fmtDateTime(g.DataHora) %> · <%= g.Operador||'—' %> · <%= g.Fornecedor||'—' %></div>
+                      <div class="mrc-title"><%= g.Tipo||'—' %><% if (g.Fornecedor) { %> <span class="mrc-title-suffix">- <%= g.Fornecedor %></span><% } %></div>
+                      <div class="mrc-sub"><%= fmtDateTime(g.DataHora) %> · <%= g.Operador||'—' %></div>
                     </div>
                     <div class="mrc-side">
                       <i class="bi bi-chevron-down mrc-chevron"></i>
@@ -751,7 +756,7 @@
                   <div class="mrc-row">
                     <div class="mrc-icon"><i class="bi bi-funnel"></i></div>
                     <div class="mrc-main">
-                      <div class="mrc-title"><%= f.Filtro||'—' %><% if (f.Tipo) { %> - <%= f.Tipo %><% } %></div>
+                      <div class="mrc-title"><%= f.Filtro||'—' %><% if (f.Tipo) { %> <span class="mrc-title-suffix">- <%= f.Tipo %></span><% } %></div>
                       <div class="mrc-sub"><%= fmtDateTime(f.DataCadastro) %> · <%= f.Operador||'—' %></div>
                     </div>
                     <div class="mrc-side">
