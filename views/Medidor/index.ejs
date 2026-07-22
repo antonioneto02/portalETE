@@ -465,13 +465,19 @@
                     <div class="mrc-icon"><i class="bi bi-droplet-half"></i></div>
                     <div class="mrc-main">
                       <div class="mrc-title"><%= l.LOCAL||'—' %></div>
-                      <div class="mrc-sub"><%= fmtDate(l.Data) %> · <%= turnoLabel(l.turno) %> · <%= l.Operador||'—' %></div>
+                      <div class="mrc-sub"><%= fmtDate(l.Data) %> · <%= l.Operador||'—' %> · <%= turnoLabel(l.turno) %></div>
                     </div>
                     <div class="mrc-side">
                       <i class="bi bi-chevron-down mrc-chevron"></i>
                     </div>
                   </div>
                   <div class="mrc-details">
+                    <div class="mrc-subhead">Identificação</div>
+                    <div class="mrc-grid">
+                      <div class="mrc-item"><span class="mrc-lbl">Operador</span><span class="mrc-val"><%= l.Operador||'—' %></span></div>
+                      <div class="mrc-item"><span class="mrc-lbl">Matrícula</span><span class="mrc-val"><%= l.matricula||'—' %></span></div>
+                      <div class="mrc-item"><span class="mrc-lbl">Turno</span><span class="mrc-val"><%= turnoLabel(l.turno) %></span></div>
+                    </div>
                     <div class="mrc-subhead">Parâmetros Medidos</div>
                     <div class="mrc-grid">
                       <div class="mrc-item"><span class="mrc-lbl">Aspecto Visual</span><span class="mrc-val"><%= l.Aspecto_Visual||'—' %></span></div>
@@ -612,7 +618,7 @@
                     <div class="mrc-icon"><i class="bi bi-cloud-fog2"></i></div>
                     <div class="mrc-main">
                       <div class="mrc-title"><%= g.Tipo||'—' %></div>
-                      <div class="mrc-sub"><%= fmtDateTime(g.DataHora) %> · <%= g.Fornecedor||'—' %> · <%= g.Operador||'—' %></div>
+                      <div class="mrc-sub"><%= fmtDateTime(g.DataHora) %> · <%= g.Operador||'—' %> · <%= g.Fornecedor||'—' %></div>
                     </div>
                     <div class="mrc-side">
                       <i class="bi bi-chevron-down mrc-chevron"></i>
@@ -622,6 +628,7 @@
                     <div class="mrc-subhead">Detalhes</div>
                     <div class="mrc-grid">
                       <div class="mrc-item"><span class="mrc-lbl">Operador</span><span class="mrc-val"><%= g.Operador||'—' %></span></div>
+                      <div class="mrc-item"><span class="mrc-lbl">Fornecedor</span><span class="mrc-val"><%= g.Fornecedor||'—' %></span></div>
                       <div class="mrc-item"><span class="mrc-lbl">Leitura</span><span class="mrc-val"><%= fmtInt(g.Leitura) %></span></div>
                       <div class="mrc-item"><span class="mrc-lbl">Pressão</span><span class="mrc-val"><%= fmtInt(g.Pressao) %></span></div>
                     </div>
@@ -744,14 +751,19 @@
                   <div class="mrc-row">
                     <div class="mrc-icon"><i class="bi bi-funnel"></i></div>
                     <div class="mrc-main">
-                      <div class="mrc-title"><%= f.Filtro||'—' %></div>
-                      <div class="mrc-sub"><%= fmtDateTime(f.DataCadastro) %> · <%= f.Tipo||'—' %> · <%= f.Operador||'—' %></div>
+                      <div class="mrc-title"><%= f.Filtro||'—' %><% if (f.Tipo) { %> - <%= f.Tipo %><% } %></div>
+                      <div class="mrc-sub"><%= fmtDateTime(f.DataCadastro) %> · <%= f.Operador||'—' %></div>
                     </div>
                     <div class="mrc-side">
                       <i class="bi bi-chevron-down mrc-chevron"></i>
                     </div>
                   </div>
                   <div class="mrc-details">
+                    <div class="mrc-subhead">Identificação</div>
+                    <div class="mrc-grid">
+                      <div class="mrc-item"><span class="mrc-lbl">Operador</span><span class="mrc-val"><%= f.Operador||'—' %></span></div>
+                      <div class="mrc-item"><span class="mrc-lbl">Tipo</span><span class="mrc-val"><%= f.Tipo||'—' %></span></div>
+                    </div>
                     <div class="mrc-subhead">Parâmetros Medidos</div>
                     <div class="mrc-grid">
                       <% if (f.Tipo === 'Retrolavagem' || f.Tipo === 'Retrolavagem e Vaporização') { %>
@@ -858,6 +870,10 @@
                     </div>
                   </div>
                   <div class="mrc-details">
+                    <div class="mrc-subhead">Identificação</div>
+                    <div class="mrc-grid">
+                      <div class="mrc-item"><span class="mrc-lbl">Operador</span><span class="mrc-val"><%= c.Operador||'—' %></span></div>
+                    </div>
                     <div class="mrc-subhead">Leituras</div>
                     <div class="mrc-grid">
                       <div class="mrc-item"><span class="mrc-lbl">Inicial</span><span class="mrc-val"><%= fmtNum(raw(c.Leitura_Inicial), 2) %></span></div>
