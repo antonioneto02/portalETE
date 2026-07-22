@@ -15,6 +15,7 @@
     .btn-excel { background:#16a34a !important; color:white !important; border:none !important; }
     .btn-excel:hover { background:#15803d !important; }
     @media (max-width:767px) { .dt-buttons { display:none !important; } }
+    @media (max-width:767px) { .indicators-bar { display:none !important; } }
     #tblMedidor_filter { display:flex !important; flex-wrap:wrap; align-items:center; gap:.4rem; }
     #tblMedidor_filter label { display:none !important; }
     @media (max-width:767px) {
@@ -206,6 +207,66 @@
     }
     @media (max-width:480px) { .param-group { grid-template-columns:1fr; } }
     #formAlert { font-size:.875rem; }
+
+    /* Troca de Turno — estilo "notas" (mesmo design da tela de Anotações do Central de Tarefas) */
+    .notes-toolbar { display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+    .notes-search { flex:1; min-width:200px; max-width:320px; }
+    .note-new-placeholder {
+      cursor:text; color:#9ca3af;
+      border:1px solid #e9edf2; border-radius:10px;
+      padding:14px 16px; background:#fff;
+      margin-bottom:20px; font-size:14px;
+      box-shadow:0 2px 8px rgba(0,0,0,.08);
+      transition:box-shadow .2s;
+    }
+    .note-new-placeholder:hover { box-shadow:0 4px 12px rgba(0,0,0,.12); }
+    .note-new-expanded {
+      border:1px solid #e9edf2; border-radius:10px;
+      background:#fff; margin-bottom:20px;
+      box-shadow:0 4px 16px rgba(0,0,0,.12); overflow:hidden;
+    }
+    .note-new-expanded.hidden { display:none; }
+    .note-new-content {
+      width:100%; border:none; padding:14px 16px 8px;
+      font-size:13px; font-family:inherit; outline:none;
+      min-height:90px; resize:vertical;
+    }
+    .note-new-toolbar {
+      display:flex; align-items:center; gap:8px;
+      padding:8px 12px; border-top:1px solid #f1f3f5;
+      flex-wrap:wrap;
+    }
+    .notes-masonry { column-count:4; column-gap:16px; }
+    @media (max-width:1400px) { .notes-masonry { column-count:3; } }
+    @media (max-width:992px)  { .notes-masonry { column-count:2; } }
+    @media (max-width:576px)  { .notes-masonry { column-count:1; } }
+    .note-card {
+      break-inside:avoid; margin-bottom:16px;
+      border-radius:10px; border:1px solid #e9edf2;
+      padding:14px 16px; position:relative;
+      transition:box-shadow .2s; background:#fff;
+    }
+    .note-card:hover { box-shadow:0 6px 20px rgba(0,0,0,.12); }
+    .note-title { font-size:13px; font-weight:700; color:#2B286F; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+    .note-content { font-size:13px; color:#1f2430; white-space:pre-wrap; line-height:1.5; }
+    .note-footer {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-top:10px; padding-top:8px; border-top:1px solid rgba(0,0,0,.06);
+      gap:8px;
+    }
+    .note-date { font-size:11px; color:#9ca3af; }
+    .note-actions { display:flex; gap:4px; visibility:hidden; opacity:0; transition:opacity .15s; }
+    .note-card:hover .note-actions { visibility:visible; opacity:1; }
+    .note-action-btn {
+      width:28px; height:28px; border:none; border-radius:50%;
+      background:transparent; color:#9ca3af;
+      cursor:pointer; display:flex; align-items:center; justify-content:center;
+      font-size:13px; transition:all .15s;
+    }
+    .note-action-btn:hover { background:rgba(43,40,111,.1); color:#2B286F; }
+    @media (max-width:767px) {
+      .note-actions { visibility:visible; opacity:1; }
+    }
   </style>
 </head>
 <body>
@@ -234,6 +295,16 @@
           <li class="nav-item" role="presentation">
             <button class="nav-link" id="tab-filtro-btn" data-bs-toggle="tab" data-bs-target="#tab-filtro" type="button" role="tab" aria-controls="tab-filtro" aria-selected="false">
               <i class="bi bi-funnel me-1"></i>Filtros
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-consumo-btn" data-bs-toggle="tab" data-bs-target="#tab-consumo" type="button" role="tab" aria-controls="tab-consumo" aria-selected="false">
+              <i class="bi bi-clipboard-data me-1"></i>Consumo/Produção
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-turno-btn" data-bs-toggle="tab" data-bs-target="#tab-turno" type="button" role="tab" aria-controls="tab-turno" aria-selected="false">
+              <i class="bi bi-arrow-left-right me-1"></i>Troca de Turno
             </button>
           </li>
         </ul>
@@ -775,6 +846,168 @@
         </div>
         </div>
 
+        <div class="tab-pane fade" id="tab-consumo" role="tabpanel" aria-labelledby="tab-consumo-btn">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span><i class="bi bi-clipboard-data me-2"></i>Lançamentos de Consumo e Produção Diária</span>
+            <button class="btn btn-sm d-none d-md-inline-flex" id="btnCadastrarConsumo"
+              style="background:linear-gradient(135deg,#2B286F,#4a47a3);color:white;border:none;">
+              <i class="bi bi-plus-lg me-1"></i>Leitura
+            </button>
+          </div>
+          <div class="card-body p-0 p-md-3">
+            <div class="d-none d-md-block" style="overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;">
+              <table id="tblConsumo" class="table table-striped table-hover dt-compact w-100">
+                <thead>
+                  <tr>
+                    <th>Data/Hora</th>
+                    <th>Local</th>
+                    <th>Operador</th>
+                    <th>Leitura Inicial</th>
+                    <th>Leitura Final</th>
+                    <th>Diferença</th>
+                    <th>Cadastro</th>
+                    <th>Alteração</th>
+                    <th class="no-export">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                <% lancamentosConsumo.forEach(function(c) { %>
+                  <tr data-id="<%= c.ID %>">
+                    <td data-order="<%= c.DataHora ? new Date(c.DataHora).getTime() : 0 %>"><%= fmtDateTime(c.DataHora) %></td>
+                    <td><%= c.Local||'—' %></td>
+                    <td><%= c.Operador||'—' %></td>
+                    <td><%= fmtNum(raw(c.Leitura_Inicial), 2) %></td>
+                    <td><%= fmtNum(raw(c.Leitura_Final), 2) %></td>
+                    <td><%= fmtNum(raw(c.Diferenca), 2) %></td>
+                    <td><%= fmtDateTime(c.DataCadastro) %></td>
+                    <td><%= fmtDateTime(c.DataAlteracao) %></td>
+                    <td class="no-export">
+                      <button type="button" class="btn btn-sm btn-outline-secondary btn-edit-consumo" data-id="<%= c.ID %>" title="Editar">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                    </td>
+                  </tr>
+                <% }); %>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="d-block d-md-none p-3" id="mobileCardListConsumo">
+              <div class="mob-toolbar">
+                <div class="mob-search">
+                  <i class="bi bi-search"></i>
+                  <input type="text" id="mobileSearchInputConsumo" placeholder="Buscar local, operador...">
+                </div>
+              </div>
+
+              <% if (!lancamentosConsumo.length) { %>
+                <div class="mrc-empty"><i class="bi bi-inbox d-block mb-2" style="font-size:1.6rem;"></i>Nenhum lançamento encontrado.</div>
+              <% } %>
+
+              <% lancamentosConsumo.forEach(function(c) {
+                const searchStr = ((c.Local||'') + ' ' + (c.Operador||'')).toLowerCase();
+              %>
+                <div class="mobile-reg-card" data-search="<%= searchStr %>" data-id="<%= c.ID %>">
+                  <div class="mrc-row">
+                    <div class="mrc-icon"><i class="bi bi-clipboard-data"></i></div>
+                    <div class="mrc-main">
+                      <div class="mrc-title"><%= c.Local||'—' %></div>
+                      <div class="mrc-sub"><%= fmtDateTime(c.DataHora) %> · <%= c.Operador||'—' %></div>
+                    </div>
+                    <div class="mrc-side">
+                      <i class="bi bi-chevron-down mrc-chevron"></i>
+                    </div>
+                  </div>
+                  <div class="mrc-details">
+                    <div class="mrc-subhead">Leituras</div>
+                    <div class="mrc-grid">
+                      <div class="mrc-item"><span class="mrc-lbl">Inicial</span><span class="mrc-val"><%= fmtNum(raw(c.Leitura_Inicial), 2) %></span></div>
+                      <div class="mrc-item"><span class="mrc-lbl">Final</span><span class="mrc-val"><%= fmtNum(raw(c.Leitura_Final), 2) %></span></div>
+                      <div class="mrc-item"><span class="mrc-lbl">Diferença</span><span class="mrc-val"><%= fmtNum(raw(c.Diferenca), 2) %></span></div>
+                    </div>
+                    <div class="mrc-subhead">Registro</div>
+                    <div class="mrc-grid">
+                      <div class="mrc-item"><span class="mrc-lbl">Cadastro</span><span class="mrc-val"><%= fmtDateTime(c.DataCadastro) %></span></div>
+                      <div class="mrc-item"><span class="mrc-lbl">Alteração</span><span class="mrc-val"><%= fmtDateTime(c.DataAlteracao) %></span></div>
+                    </div>
+                    <div style="margin-top:10px;">
+                      <button type="button" class="btn btn-sm btn-outline-secondary btn-edit-consumo" data-id="<%= c.ID %>" style="width:100%;">
+                        <i class="bi bi-pencil me-1"></i>Editar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              <% }); %>
+
+              <div class="mrc-empty" id="mobileEmptyMsgConsumo" style="display:none;">
+                <i class="bi bi-search d-block mb-2" style="font-size:1.6rem;"></i>Nenhum resultado encontrado.
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <div class="tab-pane fade" id="tab-turno" role="tabpanel" aria-labelledby="tab-turno-btn">
+        <div class="card">
+          <div class="card-header">
+            <span><i class="bi bi-arrow-left-right me-2"></i>Troca de Turno</span>
+          </div>
+          <div class="card-body p-3">
+            <div class="notes-toolbar">
+              <div class="notes-search">
+                <input type="search" class="form-control form-control-sm" id="searchTurno"
+                  placeholder="🔍 Buscar observações..." style="border-radius:20px;">
+              </div>
+            </div>
+
+            <div id="turnoNewPlaceholder" class="note-new-placeholder">
+              <span><i class="bi bi-pencil me-2" style="color:#9ca3af;"></i>Escrever uma observação de troca de turno...</span>
+            </div>
+            <div id="turnoNewExpanded" class="note-new-expanded hidden">
+              <textarea class="note-new-content" id="turnoNewContent" rows="4"
+                placeholder="Descreva ocorrências, pendências ou informações relevantes para o próximo turno..."></textarea>
+              <div id="formAlertTurnoInline" class="alert" style="display:none;margin:0 16px 10px;font-size:.85rem;"></div>
+              <div class="note-new-toolbar">
+                <div class="ms-auto d-flex gap-2">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnCancelarTurnoInline">Cancelar</button>
+                  <button type="button" class="btn btn-primary btn-sm" id="btnSalvarTurnoInline"
+                    style="background:#2B286F;border-color:#2B286F;">
+                    <i class="bi bi-check-lg"></i> Salvar
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="notes-masonry" id="turnoMasonry">
+              <% if (!trocasTurno.length) { %>
+                <div class="mrc-empty" style="column-span:all;"><i class="bi bi-chat-square-text d-block mb-2" style="font-size:1.6rem;"></i>Nenhuma observação registrada.</div>
+              <% } %>
+              <% trocasTurno.forEach(function(t) {
+                const isOwner = currentUserId && String(t.OperadorId) === String(currentUserId);
+              %>
+                <div class="note-card" data-id="<%= t.ID %>">
+                  <div class="note-title"><i class="bi bi-person-circle"></i><%= t.Operador||'—' %></div>
+                  <div class="note-content"><%= t.Texto %></div>
+                  <div class="note-footer">
+                    <span class="note-date">
+                      <%= fmtDateTime(t.DataCadastro) %><% if (t.DataAlteracao) { %> · editado em <%= fmtDateTime(t.DataAlteracao) %><% } %>
+                    </span>
+                    <% if (isOwner) { %>
+                      <div class="note-actions">
+                        <button type="button" class="note-action-btn btn-edit-turno" data-id="<%= t.ID %>" title="Editar">
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                      </div>
+                    <% } %>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+          </div>
+        </div>
+        </div>
+
         </div>
       </div>
     </div>
@@ -789,19 +1022,24 @@
   <button type="button" class="mob-fab d-md-none d-none" id="btnCadastrarFiltroMobile" aria-label="Cadastrar nova leitura de filtro">
     <i class="bi bi-plus-lg"></i>
   </button>
+  <button type="button" class="mob-fab d-md-none d-none" id="btnCadastrarConsumoMobile" aria-label="Cadastrar nova leitura de consumo">
+    <i class="bi bi-plus-lg"></i>
+  </button>
 
   <script>
   (function () {
     // Restaura a aba correta pelo hash da URL usando só JS puro, sem depender
     // de jQuery/Bootstrap/DataTables terem carregado — se algum desses scripts
     // externos falhar ou demorar, a aba ainda assim fica correta.
-    var activeTab = { '#tab-gas': 'gas', '#tab-filtro': 'filtro' }[window.location.hash];
+    var activeTab = { '#tab-gas': 'gas', '#tab-filtro': 'filtro', '#tab-consumo': 'consumo', '#tab-turno': 'turno' }[window.location.hash];
     if (!activeTab) return;
 
     var tabs = {
-      agua:   { pane: 'tab-agua',   btn: 'tab-agua-btn',   fab: 'btnCadastrarMobile' },
-      gas:    { pane: 'tab-gas',    btn: 'tab-gas-btn',    fab: 'btnCadastrarGasMobile' },
-      filtro: { pane: 'tab-filtro', btn: 'tab-filtro-btn', fab: 'btnCadastrarFiltroMobile' },
+      agua:    { pane: 'tab-agua',    btn: 'tab-agua-btn',    fab: 'btnCadastrarMobile' },
+      gas:     { pane: 'tab-gas',     btn: 'tab-gas-btn',     fab: 'btnCadastrarGasMobile' },
+      filtro:  { pane: 'tab-filtro',  btn: 'tab-filtro-btn',  fab: 'btnCadastrarFiltroMobile' },
+      consumo: { pane: 'tab-consumo', btn: 'tab-consumo-btn', fab: 'btnCadastrarConsumoMobile' },
+      turno:   { pane: 'tab-turno',   btn: 'tab-turno-btn' },
     };
 
     Object.keys(tabs).forEach(function (key) {
@@ -1134,6 +1372,101 @@
       </div>
     </div>
   </div>
+
+  <div class="modal fade" id="consumoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-fullscreen-md-down">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="consumoModalTitle"><i class="bi bi-plus-circle me-2"></i>Nova Leitura de Consumo/Produção</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formConsumo" novalidate>
+            <input type="hidden" name="_csrf" id="csrfInputConsumo" value="<%= csrfToken %>">
+            <input type="hidden" name="ID" id="cnsId" value="">
+            <div class="form-section">
+              <div class="form-section-title"><i class="bi bi-clipboard-data"></i>Leitura</div>
+              <div class="row g-2">
+                <div class="col-12 col-md-6 param-pair">
+                  <label for="cnsLocal">Local <span class="req">*</span></label>
+                  <select class="form-control" id="cnsLocal" name="Local" required>
+                    <option value="">— Selecione —</option>
+                    <option>Poço 4</option>
+                    <option>Poço 7</option>
+                    <option>Acúmulo</option>
+                    <option>Inox</option>
+                    <option>Ef Industrial</option>
+                    <option>Sanepar Ind</option>
+                    <option>Sanepar Adm</option>
+                  </select>
+                </div>
+                <div class="col-6 col-md-3 param-pair">
+                  <label for="cnsInicial">Leitura Inicial</label>
+                  <input type="text" inputmode="decimal" class="form-control input-decimal" id="cnsInicial" name="Leitura_Inicial" data-decimals="2" placeholder="0,00">
+                </div>
+                <div class="col-6 col-md-3 param-pair">
+                  <label for="cnsFinal">Leitura Final</label>
+                  <input type="text" inputmode="decimal" class="form-control input-decimal" id="cnsFinal" name="Leitura_Final" data-decimals="2" placeholder="0,00">
+                </div>
+                <div class="col-6 col-md-3 param-pair">
+                  <label for="cnsDiferenca">Diferença</label>
+                  <input type="text" class="form-control" id="cnsDiferenca" readonly
+                    style="background:#f3f4f6;cursor:not-allowed;color:#6b7280;">
+                </div>
+              </div>
+            </div>
+            <div id="formAlertConsumo" class="alert mt-2" style="display:none;"></div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnCancelarConsumo">Cancelar</button>
+          <button type="button" class="btn" id="btnSalvarConsumo"
+            style="background:linear-gradient(135deg,#2B286F,#4a47a3);color:white;border:none;min-width:110px;">
+            <span id="btnSalvarConsumoTxt"><i class="bi bi-check-lg me-1"></i>Salvar</span>
+            <span id="btnSalvarConsumoLoad" style="display:none;">
+              <span class="spinner-border spinner-border-sm me-1"></span>Salvando...
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="turnoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-fullscreen-md-down">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="turnoModalTitle"><i class="bi bi-pencil-square me-2"></i>Editar Observação de Troca de Turno</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formTurno" novalidate>
+            <input type="hidden" name="_csrf" id="csrfInputTurno" value="<%= csrfToken %>">
+            <input type="hidden" name="ID" id="trnId" value="">
+            <div class="form-section">
+              <div class="form-section-title"><i class="bi bi-chat-left-text"></i>Observação</div>
+              <div class="param-pair">
+                <label for="trnTexto">Anotações da troca de turno <span class="req">*</span></label>
+                <textarea class="form-control" id="trnTexto" name="Texto" rows="5" required
+                  placeholder="Descreva ocorrências, pendências ou informações relevantes para o próximo turno..."></textarea>
+              </div>
+            </div>
+            <div id="formAlertTurno" class="alert mt-2" style="display:none;"></div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnCancelarTurno">Cancelar</button>
+          <button type="button" class="btn" id="btnSalvarTurno"
+            style="background:linear-gradient(135deg,#2B286F,#4a47a3);color:white;border:none;min-width:110px;">
+            <span id="btnSalvarTurnoTxt"><i class="bi bi-check-lg me-1"></i>Salvar</span>
+            <span id="btnSalvarTurnoLoad" style="display:none;">
+              <span class="spinner-border spinner-border-sm me-1"></span>Salvando...
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
   const lancamentosData = {};
@@ -1144,6 +1477,12 @@
 
   const lancamentosFiltroData = {};
   <%- JSON.stringify(lancamentosFiltro) %>.forEach(function (f) { lancamentosFiltroData[f.ID] = f; });
+
+  const lancamentosConsumoData = {};
+  <%- JSON.stringify(lancamentosConsumo) %>.forEach(function (c) { lancamentosConsumoData[c.ID] = c; });
+
+  const trocasTurnoData = {};
+  <%- JSON.stringify(trocasTurno) %>.forEach(function (t) { trocasTurnoData[t.ID] = t; });
 
   const FILTRO_TIPO_MAP = {
     'Areia Novo':       'Retrolavagem',
@@ -1231,12 +1570,24 @@
       dom: '<"d-flex flex-wrap gap-2 align-items-center mb-2"f>rtip<"mt-1"l>',
     });
 
+    const tblConsumoInstance = $('#tblConsumo').DataTable({
+      language: {
+        url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/pt-BR.json'
+      },
+      order: [[0, 'desc']],
+      pageLength: isMobile ? 10 : 25,
+      scrollX: false,
+      dom: '<"d-flex flex-wrap gap-2 align-items-center mb-2"f>rtip<"mt-1"l>',
+    });
+
     function setFabVisibility(activeTab) {
       document.getElementById('btnCadastrarMobile').classList.toggle('d-none', activeTab !== 'agua');
       const gasFab = document.getElementById('btnCadastrarGasMobile');
       if (gasFab) gasFab.classList.toggle('d-none', activeTab !== 'gas');
       const filtroFab = document.getElementById('btnCadastrarFiltroMobile');
       if (filtroFab) filtroFab.classList.toggle('d-none', activeTab !== 'filtro');
+      const consumoFab = document.getElementById('btnCadastrarConsumoMobile');
+      if (consumoFab) consumoFab.classList.toggle('d-none', activeTab !== 'consumo');
     }
     document.getElementById('tab-agua-btn').addEventListener('shown.bs.tab', function () {
       setFabVisibility('agua');
@@ -1249,12 +1600,25 @@
       setFabVisibility('filtro');
       tblFiltroInstance.columns.adjust();
     });
+    document.getElementById('tab-consumo-btn').addEventListener('shown.bs.tab', function () {
+      setFabVisibility('consumo');
+      tblConsumoInstance.columns.adjust();
+    });
+    document.getElementById('tab-turno-btn').addEventListener('shown.bs.tab', function () {
+      setFabVisibility('turno');
+    });
 
     if (window.location.hash === '#tab-gas') {
       bootstrap.Tab.getOrCreateInstance(document.getElementById('tab-gas-btn')).show();
     }
     if (window.location.hash === '#tab-filtro') {
       bootstrap.Tab.getOrCreateInstance(document.getElementById('tab-filtro-btn')).show();
+    }
+    if (window.location.hash === '#tab-consumo') {
+      bootstrap.Tab.getOrCreateInstance(document.getElementById('tab-consumo-btn')).show();
+    }
+    if (window.location.hash === '#tab-turno') {
+      bootstrap.Tab.getOrCreateInstance(document.getElementById('tab-turno-btn')).show();
     }
 
     (function initMobileCardList() {
@@ -1351,6 +1715,42 @@
       if (mobileSearchInput) mobileSearchInput.addEventListener('input', applyFilters);
     })();
 
+    (function initMobileCardListConsumo() {
+      const container = document.getElementById('mobileCardListConsumo');
+      if (!container) return;
+      const mobileSearchInput = document.getElementById('mobileSearchInputConsumo');
+      const cards = container.querySelectorAll('.mobile-reg-card');
+      const emptyMsg = document.getElementById('mobileEmptyMsgConsumo');
+      if (!cards.length) return;
+
+      function applyFilters() {
+        const term = mobileSearchInput ? mobileSearchInput.value.trim().toLowerCase() : '';
+        let visibleCount = 0;
+        cards.forEach(function (card) {
+          const show = !term || card.dataset.search.includes(term);
+          card.style.display = show ? '' : 'none';
+          if (show) visibleCount++;
+        });
+        if (emptyMsg) emptyMsg.style.display = visibleCount ? 'none' : 'block';
+      }
+
+      if (mobileSearchInput) mobileSearchInput.addEventListener('input', applyFilters);
+    })();
+
+    (function initTurnoSearch() {
+      const searchInput = document.getElementById('searchTurno');
+      if (!searchInput) return;
+      searchInput.addEventListener('input', function () {
+        const term = this.value.trim().toLowerCase();
+        document.querySelectorAll('#turnoMasonry .note-card').forEach(function (card) {
+          const titulo   = (card.querySelector('.note-title')   || {}).textContent || '';
+          const conteudo = (card.querySelector('.note-content') || {}).textContent || '';
+          const match = !term || titulo.toLowerCase().includes(term) || conteudo.toLowerCase().includes(term);
+          card.style.display = match ? '' : 'none';
+        });
+      });
+    })();
+
     const s2opts = { dropdownParent: $('#medidorModal'), allowClear: true, width: '100%' };
     $('#fTurno').select2({ ...s2opts, placeholder: '— Selecione —' });
     $('#fAspecto').select2({ ...s2opts, placeholder: '— Selecione —' });
@@ -1368,9 +1768,16 @@
     $('#fltFiltro').select2({ ...s2optsFiltro, placeholder: '— Selecione —' });
     $('#fltFiltro').on('change', function () { updateFiltroTipo(); });
 
+    const s2optsConsumo = { dropdownParent: $('#consumoModal'), allowClear: true, width: '100%' };
+    $('#cnsLocal').select2({ ...s2optsConsumo, placeholder: '— Selecione o local —' });
+    document.getElementById('cnsInicial').addEventListener('input', updateDiferencaConsumo);
+    document.getElementById('cnsFinal').addEventListener('input', updateDiferencaConsumo);
+
     const modal = new bootstrap.Modal(document.getElementById('medidorModal'));
     const gasModal = new bootstrap.Modal(document.getElementById('gasModal'));
     const filtroModal = new bootstrap.Modal(document.getElementById('filtroModal'));
+    const consumoModal = new bootstrap.Modal(document.getElementById('consumoModal'));
+    const turnoModal = new bootstrap.Modal(document.getElementById('turnoModal'));
     const modalConfirma = new bootstrap.Modal(document.getElementById('modalConfirmaCancelar'));
     document.getElementById('medidorModal').addEventListener('hide.bs.modal', () => {
       if (document.activeElement && document.getElementById('medidorModal').contains(document.activeElement)) {
@@ -1384,6 +1791,16 @@
     });
     document.getElementById('filtroModal').addEventListener('hide.bs.modal', () => {
       if (document.activeElement && document.getElementById('filtroModal').contains(document.activeElement)) {
+        document.activeElement.blur();
+      }
+    });
+    document.getElementById('consumoModal').addEventListener('hide.bs.modal', () => {
+      if (document.activeElement && document.getElementById('consumoModal').contains(document.activeElement)) {
+        document.activeElement.blur();
+      }
+    });
+    document.getElementById('turnoModal').addEventListener('hide.bs.modal', () => {
+      if (document.activeElement && document.getElementById('turnoModal').contains(document.activeElement)) {
         document.activeElement.blur();
       }
     });
@@ -1487,6 +1904,17 @@
         document.getElementById('fltAlc').value = '';
         document.getElementById('fltDureza').value = '';
       }
+    }
+
+    function updateDiferencaConsumo() {
+      const inicial = parseFloat(decimalToFloatStr(document.getElementById('cnsInicial').value));
+      const final = parseFloat(decimalToFloatStr(document.getElementById('cnsFinal').value));
+      const fDiferenca = document.getElementById('cnsDiferenca');
+      if (isNaN(inicial) || isNaN(final)) {
+        fDiferenca.value = '';
+        return;
+      }
+      fDiferenca.value = fmtDecimalInput(final - inicial, 2);
     }
 
     function resetFormToCreate() {
@@ -1616,6 +2044,124 @@
       btnCadastrarFiltroMobile.addEventListener('click', () => { resetFiltroFormToCreate(); filtroModal.show(); });
     }
 
+    function resetConsumoFormToCreate() {
+      const form = document.getElementById('formConsumo');
+      form.reset();
+      document.getElementById('cnsId').value = '';
+      document.getElementById('consumoModalTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i>Nova Leitura de Consumo/Produção';
+      $('#cnsLocal').val('').trigger('change');
+      document.getElementById('cnsDiferenca').value = '';
+    }
+
+    function openConsumoForEdit(id) {
+      const c = lancamentosConsumoData[id];
+      if (!c) return;
+
+      resetConsumoFormToCreate();
+      document.getElementById('cnsId').value = id;
+      document.getElementById('consumoModalTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i>Editar Leitura de Consumo/Produção';
+
+      $('#cnsLocal').val(c.Local || '').trigger('change');
+      document.getElementById('cnsInicial').value = fmtDecimalInput(c.Leitura_Inicial, 2);
+      document.getElementById('cnsFinal').value = fmtDecimalInput(c.Leitura_Final, 2);
+      updateDiferencaConsumo();
+
+      consumoModal.show();
+    }
+
+    document.querySelectorAll('.btn-edit-consumo').forEach(function (btn) {
+      btn.addEventListener('click', function () { openConsumoForEdit(btn.dataset.id); });
+    });
+
+    document.getElementById('btnCadastrarConsumo').addEventListener('click', () => { resetConsumoFormToCreate(); consumoModal.show(); });
+    const btnCadastrarConsumoMobile = document.getElementById('btnCadastrarConsumoMobile');
+    if (btnCadastrarConsumoMobile) {
+      btnCadastrarConsumoMobile.addEventListener('click', () => { resetConsumoFormToCreate(); consumoModal.show(); });
+    }
+
+    function openTurnoForEdit(id) {
+      const t = trocasTurnoData[id];
+      if (!t) return;
+
+      document.getElementById('formTurno').reset();
+      document.getElementById('trnId').value = id;
+      document.getElementById('turnoModalTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i>Editar Observação de Troca de Turno';
+      document.getElementById('trnTexto').value = t.Texto || '';
+
+      turnoModal.show();
+    }
+
+    document.querySelectorAll('.btn-edit-turno').forEach(function (btn) {
+      btn.addEventListener('click', function () { openTurnoForEdit(btn.dataset.id); });
+    });
+
+    // Composer inline (mesmo padrão "clique para criar uma nota" das Anotações do Central de Tarefas)
+    const turnoNewPlaceholder = document.getElementById('turnoNewPlaceholder');
+    const turnoNewExpanded = document.getElementById('turnoNewExpanded');
+    const turnoNewContent = document.getElementById('turnoNewContent');
+
+    function expandTurnoComposer() {
+      turnoNewPlaceholder.style.display = 'none';
+      turnoNewExpanded.classList.remove('hidden');
+      turnoNewContent.focus();
+    }
+
+    function collapseTurnoComposer() {
+      turnoNewContent.value = '';
+      document.getElementById('formAlertTurnoInline').style.display = 'none';
+      turnoNewExpanded.classList.add('hidden');
+      turnoNewPlaceholder.style.display = 'block';
+    }
+
+    turnoNewPlaceholder.addEventListener('click', expandTurnoComposer);
+
+    document.addEventListener('click', function (e) {
+      if (!turnoNewExpanded.classList.contains('hidden') &&
+          !turnoNewExpanded.contains(e.target) && e.target !== turnoNewPlaceholder) {
+        if (turnoNewContent.value.trim()) {
+          saveTurnoInline();
+        } else {
+          collapseTurnoComposer();
+        }
+      }
+    });
+
+    document.getElementById('btnCancelarTurnoInline').addEventListener('click', collapseTurnoComposer);
+    document.getElementById('btnSalvarTurnoInline').addEventListener('click', function () { saveTurnoInline(); });
+
+    async function saveTurnoInline() {
+      const texto = turnoNewContent.value.trim();
+      const alertEl = document.getElementById('formAlertTurnoInline');
+      if (!texto) { collapseTurnoComposer(); return; }
+
+      const btn = document.getElementById('btnSalvarTurnoInline');
+      btn.disabled = true;
+      alertEl.style.display = 'none';
+
+      try {
+        const resp = await fetch('/medidor/turno/cadastrar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ _csrf: document.getElementById('csrfInputTurno').value, Texto: texto }),
+        });
+        const json = await resp.json();
+        if (json.success) {
+          location.hash = 'tab-turno';
+          location.reload();
+        } else {
+          alertEl.className = 'alert alert-danger';
+          alertEl.textContent = json.error || 'Erro ao salvar.';
+          alertEl.style.display = 'block';
+        }
+      } catch {
+        alertEl.className = 'alert alert-danger';
+        alertEl.textContent = 'Falha na comunicação com o servidor.';
+        alertEl.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
     let pendingModalToClose = null;
     function wireCancelConfirm(btnId, formId, modalInstance) {
       document.getElementById(btnId).addEventListener('click', function() {
@@ -1634,6 +2180,8 @@
     wireCancelConfirm('btnCancelar', 'formMedidor', modal);
     wireCancelConfirm('btnCancelarGas', 'formGas', gasModal);
     wireCancelConfirm('btnCancelarFiltro', 'formFiltro', filtroModal);
+    wireCancelConfirm('btnCancelarConsumo', 'formConsumo', consumoModal);
+    wireCancelConfirm('btnCancelarTurno', 'formTurno', turnoModal);
 
     document.getElementById('btnVoltarForm').addEventListener('click', () => modalConfirma.hide());
     document.getElementById('btnConfirmarSair').addEventListener('click', function() {
@@ -1645,6 +2193,8 @@
       document.getElementById('csrfInput').value = token;
       document.getElementById('csrfInputGas').value = token;
       document.getElementById('csrfInputFiltro').value = token;
+      document.getElementById('csrfInputConsumo').value = token;
+      document.getElementById('csrfInputTurno').value = token;
     }
 
     document.getElementById('btnSalvar').addEventListener('click', async function () {
@@ -1812,6 +2362,119 @@
 
     function showAlertFiltro(msg, type) {
       const el = document.getElementById('formAlertFiltro');
+      el.className = 'alert alert-' + type + ' mt-3';
+      el.textContent = msg;
+      el.style.display = 'block';
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    document.getElementById('btnSalvarConsumo').addEventListener('click', async function () {
+      const form = document.getElementById('formConsumo');
+      const alertEl = document.getElementById('formAlertConsumo');
+      if (!form.Local.value) {
+        showAlertConsumo('Por favor, selecione o Local.', 'danger');
+        return;
+      }
+
+      setBusyConsumo(true);
+      alertEl.style.display = 'none';
+
+      const editId = document.getElementById('cnsId').value;
+      const body = {};
+      new FormData(form).forEach((v, k) => { body[k] = v; });
+      form.querySelectorAll('.input-decimal').forEach(el => {
+        body[el.name] = decimalToFloatStr(body[el.name]);
+      });
+
+      const url = editId ? ('/medidor/consumo/editar/' + editId) : '/medidor/consumo/cadastrar';
+
+      try {
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const json = await resp.json();
+        if (json.success) {
+          showAlertConsumo(editId ? 'Leitura atualizada com sucesso!' : 'Leitura salva com sucesso!', 'success');
+          if (json.csrfToken) {
+            syncAllCsrfInputs(json.csrfToken);
+          }
+          resetConsumoFormToCreate();
+          setTimeout(() => { consumoModal.hide(); location.hash = 'tab-consumo'; location.reload(); }, 1200);
+        } else {
+          showAlertConsumo(json.error || 'Erro ao salvar.', 'danger');
+        }
+      } catch {
+        showAlertConsumo('Falha na comunicação com o servidor.', 'danger');
+      } finally {
+        setBusyConsumo(false);
+      }
+    });
+
+    function setBusyConsumo(on) {
+      document.getElementById('btnSalvarConsumoTxt').style.display  = on ? 'none'         : 'inline';
+      document.getElementById('btnSalvarConsumoLoad').style.display = on ? 'inline-block'  : 'none';
+      document.getElementById('btnSalvarConsumo').disabled = on;
+    }
+
+    function showAlertConsumo(msg, type) {
+      const el = document.getElementById('formAlertConsumo');
+      el.className = 'alert alert-' + type + ' mt-3';
+      el.textContent = msg;
+      el.style.display = 'block';
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    document.getElementById('btnSalvarTurno').addEventListener('click', async function () {
+      const form = document.getElementById('formTurno');
+      const alertEl = document.getElementById('formAlertTurno');
+      if (!form.Texto.value.trim()) {
+        showAlertTurno('Digite uma observação antes de salvar.', 'danger');
+        return;
+      }
+
+      setBusyTurno(true);
+      alertEl.style.display = 'none';
+
+      const editId = document.getElementById('trnId').value;
+      const body = {};
+      new FormData(form).forEach((v, k) => { body[k] = v; });
+
+      const url = editId ? ('/medidor/turno/editar/' + editId) : '/medidor/turno/cadastrar';
+
+      try {
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const json = await resp.json();
+        if (json.success) {
+          showAlertTurno(editId ? 'Observação atualizada com sucesso!' : 'Observação salva com sucesso!', 'success');
+          if (json.csrfToken) {
+            syncAllCsrfInputs(json.csrfToken);
+          }
+          form.reset();
+          setTimeout(() => { turnoModal.hide(); location.hash = 'tab-turno'; location.reload(); }, 1200);
+        } else {
+          showAlertTurno(json.error || 'Erro ao salvar.', 'danger');
+        }
+      } catch {
+        showAlertTurno('Falha na comunicação com o servidor.', 'danger');
+      } finally {
+        setBusyTurno(false);
+      }
+    });
+
+    function setBusyTurno(on) {
+      document.getElementById('btnSalvarTurnoTxt').style.display  = on ? 'none'         : 'inline';
+      document.getElementById('btnSalvarTurnoLoad').style.display = on ? 'inline-block'  : 'none';
+      document.getElementById('btnSalvarTurno').disabled = on;
+    }
+
+    function showAlertTurno(msg, type) {
+      const el = document.getElementById('formAlertTurno');
       el.className = 'alert alert-' + type + ' mt-3';
       el.textContent = msg;
       el.style.display = 'block';

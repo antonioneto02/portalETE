@@ -51,14 +51,32 @@ async function renderMedidor(req, res) {
       FROM [dw].[dbo].[FATO_LANCAMENTO_FILTRO]
       ORDER BY [DataHora] DESC, [ID] DESC
     `);
+    const resultConsumo = await pool.request().query(`
+      SELECT TOP 500
+        [ID], [DataHora], [Operador], [Local],
+        [Leitura_Inicial], [Leitura_Final], [Diferenca],
+        [DataCadastro], [DataAlteracao]
+      FROM [dw].[dbo].[FATO_LANCAMENTO_CONSUMO]
+      ORDER BY [DataHora] DESC, [ID] DESC
+    `);
+    const resultTurno = await pool.request().query(`
+      SELECT TOP 500
+        [ID], [Texto], [Operador], [OperadorId],
+        [DataCadastro], [DataAlteracao]
+      FROM [dw].[dbo].[FATO_TROCA_TURNO]
+      ORDER BY [DataCadastro] DESC, [ID] DESC
+    `);
     const csrfToken = generateCsrfToken(req);
     res.render('Medidor/index', {
       username: req.session.username || req.session.userId || 'Usuário',
       isAdmin: req.session.isAdmin || false,
       currentPath: '/medidor',
+      currentUserId: req.session.userId ? String(req.session.userId) : null,
       lancamentos: result.recordset,
       lancamentosGas: resultGas.recordset,
       lancamentosFiltro: resultFiltro.recordset,
+      lancamentosConsumo: resultConsumo.recordset,
+      trocasTurno: resultTurno.recordset,
       csrfToken,
       dbError: null,
     });
@@ -69,9 +87,12 @@ async function renderMedidor(req, res) {
       username: req.session.username || req.session.userId || 'Usuário',
       isAdmin: req.session.isAdmin || false,
       currentPath: '/medidor',
+      currentUserId: req.session.userId ? String(req.session.userId) : null,
       lancamentos: [],
       lancamentosGas: [],
       lancamentosFiltro: [],
+      lancamentosConsumo: [],
+      trocasTurno: [],
       csrfToken,
       dbError: 'Não foi possível carregar os dados. Tente novamente.',
     });
