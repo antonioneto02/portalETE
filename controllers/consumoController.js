@@ -7,14 +7,16 @@ const LOCAIS_VALIDOS = [
 ];
 
 function parseBody(b) {
-  const toStr   = v => (v !== undefined && v !== '' && v !== null) ? String(v).trim() : null;
-  const toFloat = v => (v !== undefined && v !== '' && v !== null) ? parseFloat(v) : null;
+  const toStr = v => (v !== undefined && v !== '' && v !== null) ? String(v).trim() : null;
+  const toInt = v => (v !== undefined && v !== '' && v !== null) ? parseInt(v, 10) : null;
 
   const local = toStr(b.Local);
   if (!local || !LOCAIS_VALIDOS.includes(local)) return { error: 'Local inválido.' };
 
-  const inicial = toFloat(b.Leitura_Inicial);
-  const final   = toFloat(b.Leitura_Final);
+  const inicial = toInt(b.Leitura_Inicial);
+  const final   = toInt(b.Leitura_Final);
+  if (inicial != null && isNaN(inicial)) return { error: 'Leitura inicial deve ser um número inteiro.' };
+  if (final != null && isNaN(final)) return { error: 'Leitura final deve ser um número inteiro.' };
   const diferenca = (inicial != null && final != null) ? (final - inicial) : null;
 
   return { Local: local, Leitura_Inicial: inicial, Leitura_Final: final, Diferenca: diferenca };
@@ -39,9 +41,9 @@ async function cadastrarConsumo(req, res) {
 
     r.input('Operador',        sql.VarChar(100), req.session.username || null);
     r.input('Local',           sql.VarChar(50),  data.Local);
-    r.input('Leitura_Inicial', sql.Float,        data.Leitura_Inicial);
-    r.input('Leitura_Final',   sql.Float,        data.Leitura_Final);
-    r.input('Diferenca',       sql.Float,        data.Diferenca);
+    r.input('Leitura_Inicial', sql.Int,          data.Leitura_Inicial);
+    r.input('Leitura_Final',   sql.Int,          data.Leitura_Final);
+    r.input('Diferenca',       sql.Int,          data.Diferenca);
 
     await r.query(`
       INSERT INTO [dw].[dbo].[FATO_LANCAMENTO_CONSUMO]
@@ -82,9 +84,9 @@ async function atualizarConsumo(req, res) {
 
     r.input('ID',              sql.Int,          id);
     r.input('Local',           sql.VarChar(50),  data.Local);
-    r.input('Leitura_Inicial', sql.Float,        data.Leitura_Inicial);
-    r.input('Leitura_Final',   sql.Float,        data.Leitura_Final);
-    r.input('Diferenca',       sql.Float,        data.Diferenca);
+    r.input('Leitura_Inicial', sql.Int,          data.Leitura_Inicial);
+    r.input('Leitura_Final',   sql.Int,          data.Leitura_Final);
+    r.input('Diferenca',       sql.Int,          data.Diferenca);
 
     await r.query(`
       UPDATE [dw].[dbo].[FATO_LANCAMENTO_CONSUMO]

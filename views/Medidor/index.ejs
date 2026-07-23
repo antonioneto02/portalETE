@@ -832,9 +832,9 @@
                     <td data-order="<%= c.DataHora ? new Date(c.DataHora).getTime() : 0 %>"><%= fmtDateTime(c.DataHora) %></td>
                     <td><%= c.Local||'—' %></td>
                     <td><%= c.Operador||'—' %></td>
-                    <td><%= fmtNum(raw(c.Leitura_Inicial), 2) %></td>
-                    <td><%= fmtNum(raw(c.Leitura_Final), 2) %></td>
-                    <td><%= fmtNum(raw(c.Diferenca), 2) %></td>
+                    <td><%= fmtNum(raw(c.Leitura_Inicial), 0) %></td>
+                    <td><%= fmtNum(raw(c.Leitura_Final), 0) %></td>
+                    <td><%= fmtNum(raw(c.Diferenca), 0) %></td>
                     <td><%= fmtDateTime(c.DataCadastro) %></td>
                     <td><%= fmtDateTime(c.DataAlteracao) %></td>
                     <td class="no-export">
@@ -881,9 +881,9 @@
                     </div>
                     <div class="mrc-subhead">Leituras</div>
                     <div class="mrc-grid">
-                      <div class="mrc-item"><span class="mrc-lbl">Inicial</span><span class="mrc-val"><%= fmtNum(raw(c.Leitura_Inicial), 2) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Final</span><span class="mrc-val"><%= fmtNum(raw(c.Leitura_Final), 2) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Diferença</span><span class="mrc-val"><%= fmtNum(raw(c.Diferenca), 2) %></span></div>
+                      <div class="mrc-item"><span class="mrc-lbl">Inicial</span><span class="mrc-val"><%= fmtNum(raw(c.Leitura_Inicial), 0) %></span></div>
+                      <div class="mrc-item"><span class="mrc-lbl">Final</span><span class="mrc-val"><%= fmtNum(raw(c.Leitura_Final), 0) %></span></div>
+                      <div class="mrc-item"><span class="mrc-lbl">Diferença</span><span class="mrc-val"><%= fmtNum(raw(c.Diferenca), 0) %></span></div>
                     </div>
                     <div class="mrc-subhead">Registro</div>
                     <div class="mrc-grid">
@@ -1361,11 +1361,11 @@
                 </div>
                 <div class="col-6 col-md-3 param-pair">
                   <label for="cnsInicial">Leitura Inicial</label>
-                  <input type="text" inputmode="decimal" class="form-control input-decimal" id="cnsInicial" name="Leitura_Inicial" data-decimals="2" placeholder="0,00">
+                  <input type="text" inputmode="numeric" class="form-control input-integer" id="cnsInicial" name="Leitura_Inicial" placeholder="0">
                 </div>
                 <div class="col-6 col-md-3 param-pair">
                   <label for="cnsFinal">Leitura Final</label>
-                  <input type="text" inputmode="decimal" class="form-control input-decimal" id="cnsFinal" name="Leitura_Final" data-decimals="2" placeholder="0,00">
+                  <input type="text" inputmode="numeric" class="form-control input-integer" id="cnsFinal" name="Leitura_Final" placeholder="0">
                 </div>
                 <div class="col-6 col-md-3 param-pair">
                   <label for="cnsDiferenca">Diferença</label>
@@ -1463,6 +1463,11 @@
       el.value = intPart + ',' + decPart;
     });
   }
+  function maskIntegerInput(el) {
+    el.addEventListener('input', function () {
+      el.value = el.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+    });
+  }
   function decimalToFloatStr(v) {
     if (!v) return '';
     return v.replace(/\./g, '').replace(',', '.');
@@ -1482,6 +1487,7 @@
   $(document).ready(function () {
     var isMobile = window.innerWidth <= 767;
     document.querySelectorAll('.input-decimal').forEach(maskDecimalInput);
+    document.querySelectorAll('.input-integer').forEach(maskIntegerInput);
     $('#tblMedidor').DataTable({
       language: {
         url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/pt-BR.json'
@@ -1866,14 +1872,14 @@
     }
 
     function updateDiferencaConsumo() {
-      const inicial = parseFloat(decimalToFloatStr(document.getElementById('cnsInicial').value));
-      const final = parseFloat(decimalToFloatStr(document.getElementById('cnsFinal').value));
+      const inicial = parseInt(document.getElementById('cnsInicial').value, 10);
+      const final = parseInt(document.getElementById('cnsFinal').value, 10);
       const fDiferenca = document.getElementById('cnsDiferenca');
       if (isNaN(inicial) || isNaN(final)) {
         fDiferenca.value = '';
         return;
       }
-      fDiferenca.value = fmtDecimalInput(final - inicial, 2);
+      fDiferenca.value = String(final - inicial);
     }
 
     function resetFormToCreate() {
@@ -2021,8 +2027,8 @@
       document.getElementById('consumoModalTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i>Editar Leitura de Consumo/Produção';
 
       $('#cnsLocal').val(c.Local || '').trigger('change');
-      document.getElementById('cnsInicial').value = fmtDecimalInput(c.Leitura_Inicial, 2);
-      document.getElementById('cnsFinal').value = fmtDecimalInput(c.Leitura_Final, 2);
+      document.getElementById('cnsInicial').value = (c.Leitura_Inicial != null) ? String(Math.trunc(c.Leitura_Inicial)) : '';
+      document.getElementById('cnsFinal').value = (c.Leitura_Final != null) ? String(Math.trunc(c.Leitura_Final)) : '';
       updateDiferencaConsumo();
 
       consumoModal.show();
