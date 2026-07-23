@@ -313,7 +313,8 @@
                 return Number(v);
               }
               function fmtNum(n, decimals) {
-                return n==null?'—':n.toLocaleString('pt-BR',{minimumFractionDigits:decimals||2,maximumFractionDigits:decimals||2});
+                const d = decimals!=null ? decimals : 2;
+                return n==null?'—':n.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
               }
               function fmtRaw(v) { return fmtNum(raw(v)); }
               function fmtDate(d) {
