@@ -369,7 +369,6 @@
                     <th>Data</th>
                     <th>Turno</th>
                     <th>Operador</th>
-                    <th>Matrícula</th>
                     <th>Local</th>
                     <th>Aspecto</th>
                     <th>Cor</th>
@@ -381,6 +380,7 @@
                     <th>Dureza</th>
                     <th>Condutividade</th>
                     <th>Início</th>
+                    <th>Gap</th>
                     <th>Início Descanso</th>
                     <th>Fim Descanso</th>
                     <th>Ligado</th>
@@ -403,7 +403,6 @@
                       <% } else { %>—<% } %>
                     </td>
                     <td><%= l.Operador||'—' %></td>
-                    <td><%= l.matricula||'—' %></td>
                     <td><%= l.LOCAL||'—' %></td>
                     <td><%= l.Aspecto_Visual||'—' %></td>
                     <td><%= fmtRaw(l.Cor_Visual) %></td>
@@ -415,6 +414,7 @@
                     <td><%= fmtRaw(l.Dureza) %></td>
                     <td><%= fmtRaw(l.Condutividade) %></td>
                     <td><%= fmtInt(l.Inicial) %></td>
+                    <td><%= fmtInt(l.Gap) %></td>
                     <td><%= fmtDateTime(l.Inicio_Descanso) %></td>
                     <td><%= fmtDateTime(l.Fim_Descanso) %></td>
                     <td><%= l.Ligado||'—' %></td>
@@ -460,12 +460,13 @@
               <% } %>
 
               <% lancamentos.forEach(function(l) {
-                const searchStr = ((l.LOCAL||'') + ' ' + (l.Operador||'') + ' ' + (l.matricula||'')).toLowerCase();
+                const searchStr = ((l.LOCAL||'') + ' ' + (l.Operador||'')).toLowerCase();
                 const gruposAgua = [
                   { titulo: 'Identificação', itens: [
                     { lbl: 'Operador', val: l.Operador },
                     { lbl: 'Turno', val: l.turno ? turnoLabel(l.turno) : null },
                     { lbl: 'Leitura', val: raw(l.Inicial)!=null ? fmtInt(l.Inicial) : null },
+                    { lbl: 'Gap', val: raw(l.Gap)!=null ? fmtInt(l.Gap) : null },
                     { lbl: 'Início Descanso', val: l.Inicio_Descanso ? fmtDateTime(l.Inicio_Descanso) : null },
                     { lbl: 'Fim Descanso', val: l.Fim_Descanso ? fmtDateTime(l.Fim_Descanso) : null },
                   ]},
@@ -576,6 +577,7 @@
                     <th>Fornecedor</th>
                     <th>Operador</th>
                     <th>Leitura</th>
+                    <th>Gap</th>
                     <th>Pressão</th>
                     <th>Cadastro</th>
                     <th>Alteração</th>
@@ -590,6 +592,7 @@
                     <td><%= g.Fornecedor||'—' %></td>
                     <td><%= g.Operador||'—' %></td>
                     <td><%= fmtInt(g.Leitura) %></td>
+                    <td><%= fmtInt(g.Gap) %></td>
                     <td><%= fmtInt(g.Pressao) %></td>
                     <td><%= fmtDateTime(g.DataCadastro) %></td>
                     <td><%= fmtDateTime(g.DataAlteracao) %></td>
@@ -636,6 +639,7 @@
                       <div class="mrc-item"><span class="mrc-lbl">Operador</span><span class="mrc-val"><%= g.Operador||'—' %></span></div>
                       <div class="mrc-item"><span class="mrc-lbl">Fornecedor</span><span class="mrc-val"><%= g.Fornecedor||'—' %></span></div>
                       <div class="mrc-item"><span class="mrc-lbl">Leitura</span><span class="mrc-val"><%= fmtInt(g.Leitura) %></span></div>
+                      <div class="mrc-item"><span class="mrc-lbl">Gap</span><span class="mrc-val"><%= fmtInt(g.Gap) %></span></div>
                       <div class="mrc-item"><span class="mrc-lbl">Pressão</span><span class="mrc-val"><%= fmtInt(g.Pressao) %></span></div>
                     </div>
                     <div class="mrc-subhead">Registro</div>
@@ -822,6 +826,7 @@
                     <th>Leitura Inicial</th>
                     <th>Leitura Final</th>
                     <th>Diferença</th>
+                    <th>Reservatórios</th>
                     <th>Cadastro</th>
                     <th>Alteração</th>
                     <th class="no-export">Ações</th>
@@ -836,6 +841,7 @@
                     <td><%= fmtNum(raw(c.Leitura_Inicial), 0) %></td>
                     <td><%= fmtNum(raw(c.Leitura_Final), 0) %></td>
                     <td><%= fmtNum(raw(c.Diferenca), 0) %></td>
+                    <td><%= fmtNum(raw(c.Reservatorios), 0) %></td>
                     <td><%= fmtDateTime(c.DataCadastro) %></td>
                     <td><%= fmtDateTime(c.DataAlteracao) %></td>
                     <td class="no-export">
@@ -885,6 +891,7 @@
                       <div class="mrc-item"><span class="mrc-lbl">Inicial</span><span class="mrc-val"><%= fmtNum(raw(c.Leitura_Inicial), 0) %></span></div>
                       <div class="mrc-item"><span class="mrc-lbl">Final</span><span class="mrc-val"><%= fmtNum(raw(c.Leitura_Final), 0) %></span></div>
                       <div class="mrc-item"><span class="mrc-lbl">Diferença</span><span class="mrc-val"><%= fmtNum(raw(c.Diferenca), 0) %></span></div>
+                      <div class="mrc-item"><span class="mrc-lbl">Reservatórios</span><span class="mrc-val"><%= fmtNum(raw(c.Reservatorios), 0) %></span></div>
                     </div>
                     <div class="mrc-subhead">Registro</div>
                     <div class="mrc-grid">
@@ -1372,6 +1379,10 @@
                   <label for="cnsDiferenca">Diferença</label>
                   <input type="text" class="form-control" id="cnsDiferenca" readonly
                     style="background:#f3f4f6;cursor:not-allowed;color:#6b7280;">
+                </div>
+                <div class="col-6 col-md-3 param-pair">
+                  <label for="cnsReservatorios">Reservatórios</label>
+                  <input type="text" inputmode="numeric" class="form-control input-integer" id="cnsReservatorios" name="Reservatorios" placeholder="0">
                 </div>
               </div>
             </div>
@@ -2030,6 +2041,7 @@
       $('#cnsLocal').val(c.Local || '').trigger('change');
       document.getElementById('cnsInicial').value = (c.Leitura_Inicial != null) ? String(Math.trunc(c.Leitura_Inicial)) : '';
       document.getElementById('cnsFinal').value = (c.Leitura_Final != null) ? String(Math.trunc(c.Leitura_Final)) : '';
+      document.getElementById('cnsReservatorios').value = (c.Reservatorios != null) ? String(Math.trunc(c.Reservatorios)) : '';
       updateDiferencaConsumo();
 
       consumoModal.show();

@@ -19,7 +19,10 @@ function parseBody(b) {
   if (final != null && isNaN(final)) return { error: 'Leitura final deve ser um número inteiro.' };
   const diferenca = (inicial != null && final != null) ? (final - inicial) : null;
 
-  return { Local: local, Leitura_Inicial: inicial, Leitura_Final: final, Diferenca: diferenca };
+  const reservatorios = toInt(b.Reservatorios);
+  if (reservatorios != null && isNaN(reservatorios)) return { error: 'Reservatórios deve ser um número inteiro.' };
+
+  return { Local: local, Leitura_Inicial: inicial, Leitura_Final: final, Diferenca: diferenca, Reservatorios: reservatorios };
 }
 
 async function cadastrarConsumo(req, res) {
@@ -44,12 +47,13 @@ async function cadastrarConsumo(req, res) {
     r.input('Leitura_Inicial', sql.Int,          data.Leitura_Inicial);
     r.input('Leitura_Final',   sql.Int,          data.Leitura_Final);
     r.input('Diferenca',       sql.Int,          data.Diferenca);
+    r.input('Reservatorios',   sql.Int,          data.Reservatorios);
 
     await r.query(`
       INSERT INTO [dw].[dbo].[FATO_LANCAMENTO_CONSUMO]
-        ([DataHora],[Operador],[Local],[Leitura_Inicial],[Leitura_Final],[Diferenca],[DataCadastro])
+        ([DataHora],[Operador],[Local],[Leitura_Inicial],[Leitura_Final],[Diferenca],[Reservatorios],[DataCadastro])
       VALUES
-        (GETDATE(),@Operador,@Local,@Leitura_Inicial,@Leitura_Final,@Diferenca,GETDATE())
+        (GETDATE(),@Operador,@Local,@Leitura_Inicial,@Leitura_Final,@Diferenca,@Reservatorios,GETDATE())
     `);
 
     const newCsrf = generateCsrfToken(req);
@@ -87,6 +91,7 @@ async function atualizarConsumo(req, res) {
     r.input('Leitura_Inicial', sql.Int,          data.Leitura_Inicial);
     r.input('Leitura_Final',   sql.Int,          data.Leitura_Final);
     r.input('Diferenca',       sql.Int,          data.Diferenca);
+    r.input('Reservatorios',   sql.Int,          data.Reservatorios);
 
     await r.query(`
       UPDATE [dw].[dbo].[FATO_LANCAMENTO_CONSUMO]
@@ -95,6 +100,7 @@ async function atualizarConsumo(req, res) {
         [Leitura_Inicial] = @Leitura_Inicial,
         [Leitura_Final] = @Leitura_Final,
         [Diferenca] = @Diferenca,
+        [Reservatorios] = @Reservatorios,
         [DataAlteracao] = GETDATE()
       WHERE [ID] = @ID
     `);

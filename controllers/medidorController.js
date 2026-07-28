@@ -2,16 +2,18 @@ const sql = require('mssql');
 const { getPool } = require('../database/dbConfig');
 const { generateCsrfToken } = require('../middleware/csrf');
 
-async function lookupMatricula(pool, nome) {
-  if (!nome) return null;
-  const result = await pool.request()
-    .input('Nome', sql.VarChar(200), nome)
-    .query(`
-      SELECT TOP 1 RTRIM(LTRIM(MATRICULA)) AS MATRICULA
-      FROM V_RECURSOS_HUMANOS
-      WHERE UPPER(RTRIM(LTRIM(NOME))) = UPPER(@Nome)
-    `);
-  return result.recordset[0]?.MATRICULA || null;
+async function computeGapAcumulo(pool, local, inicial, excludeId) {
+  if (local !== 'Acumulo' || inicial == null) return null;
+  const r = pool.request();
+  r.input('ExcludeId', sql.Int, excludeId ?? -1);
+  const result = await r.query(`
+    SELECT TOP 1 [Inicial]
+    FROM [dw].[dbo].[FATO_LANCAMENTO_ETA]
+    WHERE [LOCAL] = 'Acumulo' AND [ID] <> @ExcludeId AND [Inicial] IS NOT NULL
+    ORDER BY [Data] DESC, [ID] DESC
+  `);
+  const last = result.recordset[0];
+  return last ? (inicial - last.Inicial) : null;
 }
 
 async function renderMedidor(req, res) {
@@ -20,8 +22,8 @@ async function renderMedidor(req, res) {
     const result = await pool.request().query(`
       SELECT TOP 500
         [ID],
-        [Data], [turno], [matricula], [Operador], [LOCAL],
-        [Inicial], [Inicio_Descanso], [Fim_Descanso], [Desligado], [Ligado],
+        [Data], [turno], [Operador], [LOCAL],
+        [Inicial], [Gap], [Inicio_Descanso], [Fim_Descanso], [Desligado], [Ligado],
         [Aspecto_Visual],
         [Cor_Visual],
         [pH],
@@ -38,7 +40,7 @@ async function renderMedidor(req, res) {
     `);
     const resultGas = await pool.request().query(`
       SELECT TOP 500
-        [ID], [DataHora], [Tipo], [Fornecedor], [Operador], [Leitura], [Pressao],
+        [ID], [DataHora], [Tipo], [Fornecedor], [Operador], [Leitura], [Gap], [Pressao],
         [DataCadastro], [DataAlteracao]
       FROM [dw].[dbo].[FATO_LANCAMENTO_GAS]
       ORDER BY [DataHora] DESC, [ID] DESC
@@ -54,7 +56,7 @@ async function renderMedidor(req, res) {
     const resultConsumo = await pool.request().query(`
       SELECT TOP 500
         [ID], [DataHora], [Operador], [Local],
-        [Leitura_Inicial], [Leitura_Final], [Diferenca],
+        [Leitura_Inicial], [Leitura_Final], [Diferenca], [Reservatorios],
         [DataCadastro], [DataAlteracao]
       FROM [dw].[dbo].[FATO_LANCAMENTO_CONSUMO]
       ORDER BY [DataHora] DESC, [ID] DESC
@@ -110,7 +112,6 @@ async function cadastrarLancamento(req, res) {
   try {
     const pool = await getPool();
     const operador = req.session.username || null;
-    const matricula = await lookupMatricula(pool, operador);
 
     const r = pool.request();
     const b = req.body;
@@ -121,10 +122,10 @@ async function cadastrarLancamento(req, res) {
     const toTurno    = v => ({ 'Manhã': 1, 'Tarde': 2, 'Noite': 3 }[v] ?? null);
 
     r.input('turno',                   sql.Int,        toTurno(b.turno));
-    r.input('matricula',               sql.VarChar(50),  matricula);
     r.input('Operador',                sql.VarChar(100), operador);
     r.input('LOCAL',                   sql.VarChar(100), toStr(b.LOCAL));
     r.input('Inicial',                 sql.Int,          toInt(b.Inicial));
+    r.input('Gap',                     sql.Int,          await computeGapAcumulo(pool, toStr(b.LOCAL), toInt(b.Inicial), null));
     r.input('Inicio_Descanso',         sql.DateTime2,    toDateTime(b.Inicio_Descanso));
     r.input('Fim_Descanso',            sql.DateTime2,    toDateTime(b.Fim_Descanso));
     r.input('Desligado',               sql.VarChar(10),  toStr(b.Desligado));
@@ -142,8 +143,8 @@ async function cadastrarLancamento(req, res) {
 
     await r.query(`
       INSERT INTO [dw].[dbo].[FATO_LANCAMENTO_ETA]
-        ([Data],[turno],[matricula],[Operador],[LOCAL],
-         [Inicial],[Inicio_Descanso],[Fim_Descanso],[Desligado],[Ligado],
+        ([Data],[turno],[Operador],[LOCAL],
+         [Inicial],[Gap],[Inicio_Descanso],[Fim_Descanso],[Desligado],[Ligado],
          [Aspecto_Visual],[Cor_Visual],
          [pH],[Cloro],
          [Alcalinidade],
@@ -151,8 +152,8 @@ async function cadastrarLancamento(req, res) {
          [Ferro],[Dureza],[Condutividade],[OBS],
          [DataCadastro])
       VALUES
-        (GETDATE(),@turno,@matricula,@Operador,@LOCAL,
-         @Inicial,@Inicio_Descanso,@Fim_Descanso,@Desligado,@Ligado,
+        (GETDATE(),@turno,@Operador,@LOCAL,
+         @Inicial,@Gap,@Inicio_Descanso,@Fim_Descanso,@Desligado,@Ligado,
          @Aspecto_Visual,@Cor_Visual,
          @pH,@Cloro,
          @Alcalinidade,
@@ -196,6 +197,7 @@ async function atualizarLancamento(req, res) {
     r.input('turno',                   sql.Int,        toTurno(b.turno));
     r.input('LOCAL',                   sql.VarChar(100), toStr(b.LOCAL));
     r.input('Inicial',                 sql.Int,          toInt(b.Inicial));
+    r.input('Gap',                     sql.Int,          await computeGapAcumulo(pool, toStr(b.LOCAL), toInt(b.Inicial), id));
     r.input('Inicio_Descanso',         sql.DateTime2,    toDateTime(b.Inicio_Descanso));
     r.input('Fim_Descanso',            sql.DateTime2,    toDateTime(b.Fim_Descanso));
     r.input('Desligado',               sql.VarChar(10),  toStr(b.Desligado));
@@ -217,6 +219,7 @@ async function atualizarLancamento(req, res) {
         [turno] = @turno,
         [LOCAL] = @LOCAL,
         [Inicial] = @Inicial,
+        [Gap] = @Gap,
         [Inicio_Descanso] = @Inicio_Descanso,
         [Fim_Descanso] = @Fim_Descanso,
         [Desligado] = @Desligado,

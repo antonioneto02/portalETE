@@ -13,6 +13,7 @@ async function main() {
         [Leitura_Inicial] INT            NULL,
         [Leitura_Final]   INT            NULL,
         [Diferenca]       INT            NULL,
+        [Reservatorios]   INT            NULL,
         [DataCadastro]    DATETIME2      NOT NULL DEFAULT GETDATE(),
         [DataAlteracao]   DATETIME2      NULL
       );
