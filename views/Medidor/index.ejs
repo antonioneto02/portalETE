@@ -888,10 +888,13 @@
                     </div>
                     <div class="mrc-subhead">Leituras</div>
                     <div class="mrc-grid">
-                      <div class="mrc-item"><span class="mrc-lbl">Inicial</span><span class="mrc-val"><%= fmtNum(raw(c.Leitura_Inicial), 0) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Final</span><span class="mrc-val"><%= fmtNum(raw(c.Leitura_Final), 0) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Diferença</span><span class="mrc-val"><%= fmtNum(raw(c.Diferenca), 0) %></span></div>
-                      <div class="mrc-item"><span class="mrc-lbl">Reservatórios</span><span class="mrc-val"><%= fmtNum(raw(c.Reservatorios), 0) %></span></div>
+                      <% if (c.Local === 'Reservatórios') { %>
+                        <div class="mrc-item"><span class="mrc-lbl">Reservatórios</span><span class="mrc-val"><%= fmtNum(raw(c.Reservatorios), 0) %></span></div>
+                      <% } else { %>
+                        <div class="mrc-item"><span class="mrc-lbl">Inicial</span><span class="mrc-val"><%= fmtNum(raw(c.Leitura_Inicial), 0) %></span></div>
+                        <div class="mrc-item"><span class="mrc-lbl">Final</span><span class="mrc-val"><%= fmtNum(raw(c.Leitura_Final), 0) %></span></div>
+                        <div class="mrc-item"><span class="mrc-lbl">Diferença</span><span class="mrc-val"><%= fmtNum(raw(c.Diferenca), 0) %></span></div>
+                      <% } %>
                     </div>
                     <div class="mrc-subhead">Registro</div>
                     <div class="mrc-grid">
@@ -1365,23 +1368,24 @@
                     <option>Ef Industrial</option>
                     <option>Sanepar Ind</option>
                     <option>Sanepar Adm</option>
+                    <option>Reservatórios</option>
                   </select>
                 </div>
-                <div class="col-6 col-md-3 param-pair">
+                <div class="col-6 col-md-3 param-pair cns-group-leitura">
                   <label for="cnsInicial">Leitura Inicial</label>
                   <input type="text" inputmode="numeric" class="form-control input-integer" id="cnsInicial" name="Leitura_Inicial" placeholder="0">
                 </div>
-                <div class="col-6 col-md-3 param-pair">
+                <div class="col-6 col-md-3 param-pair cns-group-leitura">
                   <label for="cnsFinal">Leitura Final</label>
                   <input type="text" inputmode="numeric" class="form-control input-integer" id="cnsFinal" name="Leitura_Final" placeholder="0">
                 </div>
-                <div class="col-6 col-md-3 param-pair">
+                <div class="col-6 col-md-3 param-pair cns-group-leitura">
                   <label for="cnsDiferenca">Diferença</label>
                   <input type="text" class="form-control" id="cnsDiferenca" readonly
                     style="background:#f3f4f6;cursor:not-allowed;color:#6b7280;">
                 </div>
-                <div class="col-6 col-md-3 param-pair">
-                  <label for="cnsReservatorios">Reservatórios</label>
+                <div class="col-6 col-md-3 param-pair" id="cnsGroupReservatorios" style="display:none;">
+                  <label for="cnsReservatorios">Leitura Reservatórios</label>
                   <input type="text" inputmode="numeric" class="form-control input-integer" id="cnsReservatorios" name="Reservatorios" placeholder="0">
                 </div>
               </div>
@@ -1747,6 +1751,7 @@
 
     const s2optsConsumo = { dropdownParent: $('#consumoModal'), allowClear: true, width: '100%' };
     $('#cnsLocal').select2({ ...s2optsConsumo, placeholder: '— Selecione o local —' });
+    $('#cnsLocal').on('change', updateConsumoLocalFields);
     document.getElementById('cnsInicial').addEventListener('input', updateDiferencaConsumo);
     document.getElementById('cnsFinal').addEventListener('input', updateDiferencaConsumo);
 
@@ -1892,6 +1897,21 @@
         return;
       }
       fDiferenca.value = String(final - inicial);
+    }
+
+    function updateConsumoLocalFields() {
+      const isReservatorios = $('#cnsLocal').val() === 'Reservatórios';
+      document.querySelectorAll('.cns-group-leitura').forEach(function (el) {
+        el.style.display = isReservatorios ? 'none' : '';
+      });
+      document.getElementById('cnsGroupReservatorios').style.display = isReservatorios ? '' : 'none';
+      if (isReservatorios) {
+        document.getElementById('cnsInicial').value = '';
+        document.getElementById('cnsFinal').value = '';
+        document.getElementById('cnsDiferenca').value = '';
+      } else {
+        document.getElementById('cnsReservatorios').value = '';
+      }
     }
 
     function resetFormToCreate() {

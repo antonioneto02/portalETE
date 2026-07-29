@@ -3,7 +3,7 @@ const { getPool } = require('../database/dbConfig');
 const { generateCsrfToken } = require('../middleware/csrf');
 
 const LOCAIS_VALIDOS = [
-  'Poço 4', 'Poço 7', 'Acúmulo', 'Inox', 'Ef Industrial', 'Sanepar Ind', 'Sanepar Adm',
+  'Poço 4', 'Poço 7', 'Acúmulo', 'Inox', 'Ef Industrial', 'Sanepar Ind', 'Sanepar Adm', 'Reservatórios',
 ];
 
 function parseBody(b) {
