@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 
 dotenv.config({ override: true });
 
-const PROTHEUS_SERVER = process.env.PROTHEUS_SERVER;
+const protheusAuthUrl = process.env.PROTHEUS_AUTH_URL || 'http://localhost:3032';
 const TIMEOUT_MS = 120 * 60 * 1000;
 const PROTHEUS_ADMIN_IDS = (process.env.PROTHEUS_ADMIN_IDS || '').split(',').map(s => s.trim()).filter(Boolean);
 const COOKIE_COMMON = { httpOnly: true, secure: false, sameSite: 'lax' };
@@ -26,7 +26,7 @@ async function validaLogin(req, res) {
 
   try {
     const protheusResp = await axios.post(
-      `http://${PROTHEUS_SERVER}:9001/rest/api/oauth2/v1/token`,
+      `${protheusAuthUrl}/rest/api/oauth2/v1/token`,
       null,
       {
         params: { grant_type: 'password', username: usernameClean, password },
@@ -42,7 +42,7 @@ async function validaLogin(req, res) {
 
     try {
       const userResp = await axios.get(
-        `http://${PROTHEUS_SERVER}:9001/rest/users/getuserid`,
+        `${protheusAuthUrl}/rest/users/getuserid`,
         {
           headers: { Authorization: `Bearer ${access_token}` },
           timeout: 8000,
@@ -104,7 +104,7 @@ async function requireAuth(req, res, next) {
     if (!token && refreshToken) {
       try {
         const refreshResp = await axios.post(
-          `http://${PROTHEUS_SERVER}:9001/rest/api/oauth2/v1/token`,
+          `${protheusAuthUrl}/rest/api/oauth2/v1/token`,
           null,
           { params: { grant_type: 'refresh_token', refresh_token: refreshToken }, timeout: 8000 }
         );
