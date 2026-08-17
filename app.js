@@ -5,6 +5,7 @@ const session = require('express-session');
 const FileStoreFactory = require('session-file-store');
 const cookieParser = require('cookie-parser');
 const fs = require('fs');
+const https = require('https');
 const crypto = require('crypto');
 const helmet = require('helmet');
 const hpp = require('hpp');
@@ -90,6 +91,12 @@ app.get('/.well-known/appspecific/com.chrome.devtools.json', (req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
-app.listen(port, host || '0.0.0.0', () => {
-  console.log(`Portal ETE rodando em http://${host || '0.0.0.0'}:${port}`);
+const CERT_DIR = 'C:\\Projetos\\Certificados';
+const sslOptions = {
+  key: fs.readFileSync(path.join(CERT_DIR, 'cini.key')),
+  cert: fs.readFileSync(path.join(CERT_DIR, 'cini.crt')),
+};
+
+https.createServer(sslOptions, app).listen(port, host || '0.0.0.0', () => {
+  console.log(`Portal ETE rodando em https://${host || '0.0.0.0'}:${port}`);
 });

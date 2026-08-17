@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 
 dotenv.config({ override: true });
 
-const protheusAuthUrl = process.env.PROTHEUS_AUTH_URL || 'http://localhost:3032';
+const protheusAuthUrl = process.env.PROTHEUS_AUTH_URL || 'https://consultas.cini.com.br:3032';
 const TIMEOUT_MS = 120 * 60 * 1000;
 const PROTHEUS_ADMIN_IDS = (process.env.PROTHEUS_ADMIN_IDS || '').split(',').map(s => s.trim()).filter(Boolean);
 const COOKIE_COMMON = { httpOnly: true, secure: false, sameSite: 'lax' };
