@@ -1,0 +1,16 @@
+services:
+  portal-ete:
+    image: portal-ete:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: portal-ete
+    restart: unless-stopped
+    ports:
+      - "3021:3021"
+    env_file:
+      - .env
+    environment:
+      CERT_DIR: C:/certs
+    volumes:
+      - C:/Projetos/Certificados:C:/certs:ro

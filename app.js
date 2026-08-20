@@ -91,7 +91,11 @@ app.get('/.well-known/appspecific/com.chrome.devtools.json', (req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
-const CERT_DIR = 'C:\\Projetos\\Certificados';
+app.get('/health', (_req, res) => {
+  res.json({ status: 'ok', service: 'portal-ete' });
+});
+
+const CERT_DIR = process.env.CERT_DIR || 'C:\\Projetos\\Certificados';
 const sslOptions = {
   key: fs.readFileSync(path.join(CERT_DIR, 'cini.key')),
   cert: fs.readFileSync(path.join(CERT_DIR, 'cini.crt')),
