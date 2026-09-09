@@ -1,16 +1,7 @@
 const express = require('express');
-const rateLimit = require('express-rate-limit');
 const router = express.Router();
 const { validaLogin } = require('../controllers/loginController');
 const { generateCsrfToken, verifyCsrfToken } = require('../middleware/csrf');
-
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 8,
-  standardHeaders: true,
-  legacyHeaders: false,
-  handler: (_req, res) => res.redirect('/login?error=too_many_attempts'),
-});
 
 router.get('/login', (req, res) => {
   if (req.session.userId) return res.redirect('/home');
@@ -23,7 +14,7 @@ router.get('/login', (req, res) => {
   });
 });
 
-router.post('/login', loginLimiter, verifyCsrfToken, validaLogin);
+router.post('/login', verifyCsrfToken, validaLogin);
 
 router.get('/logout', (req, res) => {
   res.clearCookie('token');

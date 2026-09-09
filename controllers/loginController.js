@@ -30,6 +30,7 @@ async function validaLogin(req, res) {
       null,
       {
         params: { grant_type: 'password', username: usernameClean, password },
+        headers: { 'X-Client-IP': req.ip },
         timeout: 10000,
       }
     );
