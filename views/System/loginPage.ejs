@@ -92,6 +92,10 @@
               <span id="btnText">Entrar</span>
             </button>
           </div>
+
+          <div class="text-center mt-3">
+            <a href="#" id="forgotPasswordLink" style="color: #6c757d; font-size: 0.875rem; text-decoration: underline;">Esqueci minha senha?</a>
+          </div>
         </form>
       </div>
     </div>
@@ -135,6 +139,14 @@
     passwordField.addEventListener('keydown', checkCaps);
     passwordField.addEventListener('keyup', checkCaps);
     passwordField.addEventListener('blur', () => capsWarning.style.display = 'none');
+
+    document.getElementById('forgotPasswordLink').addEventListener('click', function(e) {
+      e.preventDefault();
+      var username = (document.getElementById('usernameProtheus') || {}).value || '';
+      var url = '<%= protheusAuthUrl %>/reset-senha.html?username=' + encodeURIComponent(username.trim())
+        + '&returnUrl=' + encodeURIComponent(window.location.origin + window.location.pathname);
+      window.location.href = url;
+    });
 
     document.getElementById('loginForm').addEventListener('submit', function(e) {
       e.preventDefault();
