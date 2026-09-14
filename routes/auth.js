@@ -3,6 +3,8 @@ const router = express.Router();
 const { validaLogin } = require('../controllers/loginController');
 const { generateCsrfToken, verifyCsrfToken } = require('../middleware/csrf');
 
+const protheusAuthUrl = process.env.PROTHEUS_AUTH_URL || 'https://consultas.cini.com.br:3032';
+
 router.get('/login', (req, res) => {
   if (req.session.userId) return res.redirect('/home');
   const csrfToken = generateCsrfToken(req);
@@ -11,6 +13,7 @@ router.get('/login', (req, res) => {
     username: req.query.username || '',
     timeout: req.query.timeout === 'true',
     csrfToken,
+    protheusAuthUrl,
   });
 });
 

@@ -38,6 +38,23 @@
           <div id="errorAlert" class="alert alert-warning mt-2" role="alert" style="border-left: 4px solid #ffc107;">
             <strong>Sessão de segurança expirada.</strong> Recarregue a página e tente novamente.
           </div>
+        <% } else if (error === 'password_locked') { %>
+          <div id="passwordLockedAlert" class="alert alert-danger mt-2" role="alert" style="border-left: 4px solid #dc3545;">
+            <div class="d-flex align-items-center">
+              <i class="fas fa-lock me-2" style="font-size: 1.2em;"></i>
+              <div>
+                <strong>Senha bloqueada por inatividade!</strong><br>
+                <small>Sua senha foi bloqueada pelo Protheus por inatividade prolongada. Solicite a redefinição da senha.</small>
+              </div>
+            </div>
+            <div class="text-center mt-2">
+              <a class="btn btn-light btn-sm" style="font-weight: 600;"
+                href="<%= protheusAuthUrl %>/reset-senha.html?username=<%= encodeURIComponent(username || '') %>"
+                target="_blank" rel="noopener noreferrer">
+                Redefinir senha
+              </a>
+            </div>
+          </div>
         <% } %>
       </div>
 

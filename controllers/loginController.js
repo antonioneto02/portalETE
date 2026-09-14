@@ -73,6 +73,9 @@ async function validaLogin(req, res) {
     return res.redirect(returnTo);
   } catch (err) {
     const status = err?.response?.status;
+    if (status === 401 && err?.response?.data?.passwordLocked === true) {
+      return res.redirect(`/login?error=password_locked&username=${encodeURIComponent(usernameClean)}`);
+    }
     if (status === 401 || status === 400 || status === 403) {
       return res.redirect(`/login?error=invalid_credentials&username=${encodeURIComponent(usernameClean)}`);
     }
