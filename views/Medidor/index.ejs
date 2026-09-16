@@ -1518,7 +1518,18 @@
           text: '<i class="bi bi-file-earmark-excel me-1"></i>Excel',
           className: 'btn btn-sm btn-excel',
           title: 'Lançamentos ETA',
-          exportOptions: { columns: ':not(.no-export)' },
+          exportOptions: {
+            columns: ':not(.no-export)',
+            format: {
+              body: function (data, row, column, node) {
+                var text = $(node).text().trim();
+                if ([5, 6, 7, 8, 9, 10, 11, 12].indexOf(column) !== -1 && text && text !== '—') {
+                  return text.replace(/\./g, '').replace(',', '.');
+                }
+                return text;
+              },
+            },
+          },
         },
       ],
       initComplete: function () {
