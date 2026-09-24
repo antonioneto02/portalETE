@@ -3,3 +3,6 @@ node_modules/
 logs/
 cini.crt
 cini.key
+
+# Override de Docker Compose especifico deste host (contorna bug de rede/HNS)
+docker-compose.override.yml
