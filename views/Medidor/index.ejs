@@ -11,6 +11,10 @@
     .dt-compact th { white-space:nowrap; }
     .btn-excel { background:#16a34a !important; color:white !important; border:none !important; }
     .btn-excel:hover { background:#15803d !important; }
+    .dt-toolbar { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:.5rem; margin-bottom:.75rem; }
+    .dt-toolbar .dataTables_filter { grid-column:2; float:none; text-align:center; justify-content:center; }
+    .dt-toolbar .dt-buttons { grid-column:3; justify-self:end; float:none; }
+    .dt-toolbar .dataTables_filter input { margin-left:.5rem; }
     @media (max-width:767px) { .dt-buttons { display:none !important; } }
     @media (max-width:767px) { .indicators-bar { display:none !important; } }
     #tblMedidor_filter { display:flex !important; flex-wrap:wrap; align-items:center; gap:.4rem; }
@@ -1553,7 +1557,7 @@
       order: [[0, 'desc']],
       pageLength: isMobile ? 10 : 25,
       scrollX: false,
-      dom: '<"d-flex flex-wrap gap-2 align-items-center mb-2"Bf>rtip<"mt-1"l>',
+      dom: '<"dt-toolbar"fB>rtip<"mt-1"l>',
       buttons: [excelButton('Lançamentos ETA', [5, 6, 7, 8, 9, 10, 11, 12])],
       initComplete: function () {
         dtBuildFilters(this.api(), 'tblMedidor_filter', [
@@ -1572,7 +1576,7 @@
       order: [[0, 'desc']],
       pageLength: isMobile ? 10 : 25,
       scrollX: false,
-      dom: '<"d-flex flex-wrap gap-2 align-items-center mb-2"Bf>rtip<"mt-1"l>',
+      dom: '<"dt-toolbar"fB>rtip<"mt-1"l>',
       buttons: [excelButton('Lançamentos Gás', [4, 5, 6])],
     });
 
@@ -1583,7 +1587,7 @@
       order: [[7, 'desc']],
       pageLength: isMobile ? 10 : 25,
       scrollX: false,
-      dom: '<"d-flex flex-wrap gap-2 align-items-center mb-2"Bf>rtip<"mt-1"l>',
+      dom: '<"dt-toolbar"fB>rtip<"mt-1"l>',
       buttons: [excelButton('Lançamentos Filtros', [3, 4, 5, 6])],
     });
 
@@ -1594,7 +1598,7 @@
       order: [[0, 'desc']],
       pageLength: isMobile ? 10 : 25,
       scrollX: false,
-      dom: '<"d-flex flex-wrap gap-2 align-items-center mb-2"Bf>rtip<"mt-1"l>',
+      dom: '<"dt-toolbar"fB>rtip<"mt-1"l>',
       buttons: [excelButton('Lançamentos Consumo e Produção', [3, 4, 5, 6])],
     });
 
